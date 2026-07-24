@@ -22,7 +22,7 @@ public class UserPostRequest {
   @JsonFormat(pattern = "yyyy-MM-dd")
   private LocalDate birthday;
 
-  @Pattern(regexp = "^[a-zA-Z0-9а-яА-Я _-]{1,25}$", message = "Некорректный имя")
+  @Pattern(regexp = "^[a-zA-Z0-9а-яА-Я _\\-\\.]{1,25}$", message = "Некорректное имя")
   @Builder.Default
   private String name = null;
 }

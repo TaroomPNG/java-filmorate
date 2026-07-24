@@ -110,7 +110,7 @@ public class UserPostTest {
     performPostUser(userPostRequestFirst)
         .andExpect(status().isOk())
         .andExpect(jsonPath(loginPath).value(userPostRequestFirst.getLogin()));
-    performPostUser(userPostRequestSecond).andExpect(status().isConflict());
+    performPostUser(userPostRequestSecond).andExpect(status().isBadRequest());
   }
 
   @Test
@@ -123,7 +123,7 @@ public class UserPostTest {
     performPostUser(userPostRequestFirst)
         .andExpect(status().isOk())
         .andExpect(jsonPath(emailPath).value(userPostRequestFirst.getEmail()));
-    performPostUser(userPostRequestSecond).andExpect(status().isConflict());
+    performPostUser(userPostRequestSecond).andExpect(status().isBadRequest());
   }
 
   // Тест валидации параметров

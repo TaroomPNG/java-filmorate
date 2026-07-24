@@ -29,7 +29,7 @@ public class GlobalExceptionHandler {
     ErrorResponse response = new ErrorResponse(message);
 
     log.error(response.toString());
-    return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)

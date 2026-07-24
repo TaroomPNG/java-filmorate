@@ -105,7 +105,7 @@ public class UserPutTest {
             .login(userPostResponse.getLogin())
             .build();
 
-    performPutUser(userPutRequest).andExpect(status().isConflict());
+    performPutUser(userPutRequest).andExpect(status().isBadRequest());
   }
 
   @Test
@@ -116,7 +116,7 @@ public class UserPutTest {
             .email(userPostResponse.getEmail())
             .build();
 
-    performPutUser(userPutRequest).andExpect(status().isConflict());
+    performPutUser(userPutRequest).andExpect(status().isBadRequest());
   }
 
   // Проверка валидации параметров

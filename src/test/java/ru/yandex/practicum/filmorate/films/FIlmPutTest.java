@@ -97,7 +97,7 @@ public class FIlmPutTest {
     FilmPutRequest filmPutRequest =
         FilmPutRequest.builder().id(postResponse.getId()).name(postResponse.getName()).build();
 
-    performPutFilm(filmPutRequest).andExpect(status().isConflict());
+    performPutFilm(filmPutRequest).andExpect(status().isBadRequest());
   }
 
   @Test
@@ -108,7 +108,7 @@ public class FIlmPutTest {
             .releaseDate(LocalDate.of(1895, 12, 27))
             .build();
 
-    performPutFilm(filmPutRequest).andExpect(status().isConflict());
+    performPutFilm(filmPutRequest).andExpect(status().isBadRequest());
   }
 
   // Проверка валидации параметров

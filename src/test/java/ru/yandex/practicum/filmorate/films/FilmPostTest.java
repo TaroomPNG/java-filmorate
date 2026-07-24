@@ -183,7 +183,7 @@ class FilmPostTest {
             .duration(120)
             .build();
 
-    performPostFilm(filmPostRequest).andExpect(status().isConflict());
+    performPostFilm(filmPostRequest).andExpect(status().isBadRequest());
   }
 
   @Test
@@ -204,7 +204,7 @@ class FilmPostTest {
             .build();
 
     performPostFilm(filmPostRequestFirst).andExpect(status().isOk());
-    performPostFilm(filmPostRequestSecond).andExpect(status().isConflict());
+    performPostFilm(filmPostRequestSecond).andExpect(status().isBadRequest());
   }
 
   // Тест валидации параметров
