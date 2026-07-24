@@ -1,13 +1,12 @@
-package ru.yandex.practicum.filmorate.model;
+package ru.yandex.practicum.filmorate.model.dto.filmDto;
 
 import java.time.LocalDate;
-import lombok.*;
+import lombok.Builder;
+import lombok.Data;
 
-/** Film. */
 @Data
-@EqualsAndHashCode(of = {"name"})
-@AllArgsConstructor
-public class Film {
+@Builder
+public class FilmResponse {
   private Long id;
   private String name;
   private String description;
