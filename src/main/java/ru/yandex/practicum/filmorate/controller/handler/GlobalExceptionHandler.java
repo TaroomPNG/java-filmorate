@@ -8,13 +8,14 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import ru.yandex.practicum.filmorate.controller.exceptions.ConditionsNotMetException;
+import ru.yandex.practicum.filmorate.controller.exceptions.FilmNotFound;
 import ru.yandex.practicum.filmorate.controller.exceptions.UserNotFound;
 
 @ControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
 
-  @ExceptionHandler(UserNotFound.class)
+  @ExceptionHandler({UserNotFound.class, FilmNotFound.class})
   public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFound ex) {
     String message = ex.getMessage();
     ErrorResponse response = new ErrorResponse(message);
