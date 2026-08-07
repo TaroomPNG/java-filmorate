@@ -55,7 +55,7 @@ class FilmPostTest {
             .build();
 
     performPostFilm(filmPostRequest)
-        .andExpect(status().isOk())
+        .andExpect(status().isCreated())
         .andExpect(jsonPath(namePath).value(filmPostRequest.getName()))
         .andExpect(jsonPath(descriptionPath).value(filmPostRequest.getDescription()))
         .andExpect(jsonPath(releaseDatePath).value(filmPostRequest.getReleaseDate().toString()))
@@ -80,12 +80,12 @@ class FilmPostTest {
             .build();
 
     performPostFilm(filmPostRequestFirst)
-        .andExpect(status().isOk())
-        .andExpect(jsonPath(idPath).value("1"));
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath(idPath).value(1));
 
     performPostFilm(filmPostRequestSecond)
-        .andExpect(status().isOk())
-        .andExpect(jsonPath(idPath).value("2"));
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath(idPath).value(2));
   }
 
   @Test
@@ -109,10 +109,10 @@ class FilmPostTest {
     String expectedDescription = "-";
 
     performPostFilm(filmPostRequestWithoutDescription)
-        .andExpect(status().isOk())
+        .andExpect(status().isCreated())
         .andExpect(jsonPath(descriptionPath).value(expectedDescription));
     performPostFilm(filmPostRequestWithBlankDescription)
-        .andExpect(status().isOk())
+        .andExpect(status().isCreated())
         .andExpect(jsonPath(descriptionPath).value(expectedDescription));
   }
 
@@ -131,7 +131,7 @@ class FilmPostTest {
             .build();
 
     performPostFilm(filmPostRequest)
-        .andExpect(status().isOk())
+        .andExpect(status().isCreated())
         .andExpect(jsonPath(releaseDatePath).value(edgeDate.toString()));
   }
 
@@ -148,7 +148,7 @@ class FilmPostTest {
     Integer expectedDuration = 1;
 
     performPostFilm(filmPostRequest)
-        .andExpect(status().isOk())
+        .andExpect(status().isCreated())
         .andExpect(jsonPath(durationPath).value(expectedDuration));
   }
 
@@ -165,7 +165,7 @@ class FilmPostTest {
     String expectedDescriptions = "a".repeat(200);
 
     performPostFilm(filmPostRequest)
-        .andExpect(status().isOk())
+        .andExpect(status().isCreated())
         .andExpect(jsonPath(descriptionPath).value(expectedDescriptions));
   }
 
@@ -203,7 +203,7 @@ class FilmPostTest {
             .duration(120)
             .build();
 
-    performPostFilm(filmPostRequestFirst).andExpect(status().isOk());
+    performPostFilm(filmPostRequestFirst).andExpect(status().isCreated());
     performPostFilm(filmPostRequestSecond).andExpect(status().isBadRequest());
   }
 

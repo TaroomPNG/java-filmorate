@@ -80,7 +80,7 @@ public class FIlmPutTest {
         .andExpect(jsonPath("$.name").value(filmPutRequest.getName()))
         .andExpect(jsonPath("$.description").value(postResponse.getDescription()))
         .andExpect(jsonPath("$.releaseDate").value(postResponse.getReleaseDate().toString()))
-        .andExpect(jsonPath("$.duration").value(postResponse.getDuration().toString()));
+        .andExpect(jsonPath("$.duration").value(postResponse.getDuration()));
   }
 
   // Тест некорректных запросов

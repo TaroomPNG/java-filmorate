@@ -16,7 +16,7 @@ import ru.yandex.practicum.filmorate.controller.exceptions.UserNotFound;
 public class GlobalExceptionHandler {
 
   @ExceptionHandler({UserNotFound.class, FilmNotFound.class})
-  public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFound ex) {
+  public ResponseEntity<ErrorResponse> handleUserNotFound(RuntimeException ex) {
     String message = ex.getMessage();
     ErrorResponse response = new ErrorResponse(message);
 

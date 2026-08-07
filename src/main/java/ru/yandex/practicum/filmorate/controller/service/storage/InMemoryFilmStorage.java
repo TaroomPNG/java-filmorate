@@ -28,6 +28,10 @@ public class InMemoryFilmStorage implements FilmStorage {
     LocalDate earliestDate = LocalDate.of(1895, 12, 28);
 
     if (filmPutRequest.getReleaseDate().isBefore(earliestDate)) {
+      log.warn(
+          "Ошибка валидации: дата {} раньше минимально допустимой {}",
+          filmPutRequest.getReleaseDate(),
+          earliestDate);
       throw new ConditionsNotMetException("Дата обновления некорректна (слишком старая)");
     }
 
@@ -53,10 +57,14 @@ public class InMemoryFilmStorage implements FilmStorage {
 
   @Override
   public Film addFilm(FilmPostRequest filmPostRequest) {
-    log.trace("Запрос addFilm: {}", filmPostRequest);
+    log.debug("Запрос addFilm: {}", filmPostRequest);
     LocalDate earliestDate = LocalDate.of(1895, 12, 28);
 
     if (filmPostRequest.getReleaseDate().isBefore(earliestDate)) {
+      log.warn(
+          "Ошибка валидации: дата {} раньше минимально допустимой {}",
+          filmPostRequest.getReleaseDate(),
+          earliestDate);
       throw new ConditionsNotMetException(
           String.format(
               "Ошибка: дата фильма %s раньше минимально допустимой %s",
@@ -68,6 +76,7 @@ public class InMemoryFilmStorage implements FilmStorage {
             .anyMatch(film -> film.getName().equalsIgnoreCase(filmPostRequest.getName()));
 
     if (existFilmName) {
+      log.warn("Ошибка валидации: фильм с именем {} уже добавлен", filmPostRequest.getName());
       throw new ConditionsNotMetException(
           String.format("Фильм с именем %s уже добавлен", filmPostRequest.getName()));
     }
@@ -100,6 +109,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     Film oldFilm = filmHashMap.get(filmPutRequest.getId());
 
     if (oldFilm == null) {
+      log.warn("Ошибка валидации: фильм по ID - {} не найден", filmPutRequest.getId());
       throw new FilmNotFound(filmPutRequest.getId());
     }
 
@@ -129,6 +139,7 @@ public class InMemoryFilmStorage implements FilmStorage {
   public boolean deleteFilm(long id) {
     log.trace("Запрос deleteFilm");
     if (!filmHashMap.containsKey(id)) {
+      log.warn("Ошибка валидации: фильм по ID - {} не найден", id);
       throw new FilmNotFound(id);
     }
     filmHashMap.remove(id);
@@ -141,6 +152,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     log.trace("Запрос getFilmById");
 
     if (!filmHashMap.containsKey(id)) {
+      log.warn("Ошибка валидации: фильм по ID - {} не найден", id);
       throw new FilmNotFound(id);
     }
     return filmHashMap.get(id);
@@ -151,6 +163,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     log.trace("Запрос getAllFilms");
 
     if (filmHashMap.isEmpty()) {
+      log.warn("Ошибка валидации: на сервере отсутствуют фильмы");
       throw new FilmNotFound("На сервере отсутствуют фильмы // Фильмов для передачи нет");
     }
 
@@ -171,6 +184,7 @@ public class InMemoryFilmStorage implements FilmStorage {
             .anyMatch(film -> film.getName().equalsIgnoreCase(filmPutRequest.getName()));
 
     if (existFilmName) {
+      log.warn("Ошибка валидации: имя фильма {} занято для обновления", filmPutRequest.getName());
       throw new ConditionsNotMetException(
           String.format("Имя фильма %s занято для обновления", filmPutRequest.getName()));
     }

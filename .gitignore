@@ -45,3 +45,7 @@ build/
 
 *.db
 db/*
+
+### Cursor ###
+.cursor
+.docs

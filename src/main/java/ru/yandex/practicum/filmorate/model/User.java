@@ -33,6 +33,16 @@ public class User {
   }
 
   public Set<UserResponse> getUserFriendResponse() {
-    return this.friendSet.stream().map(UserResponse::new).collect(Collectors.toSet());
+    return this.friendSet.stream()
+        .map(
+            friend ->
+                UserResponse.builder()
+                    .id(friend.getId())
+                    .email(friend.getEmail())
+                    .login(friend.getLogin())
+                    .name(friend.getName())
+                    .birthday(friend.getBirthday())
+                    .build())
+        .collect(Collectors.toSet());
   }
 }

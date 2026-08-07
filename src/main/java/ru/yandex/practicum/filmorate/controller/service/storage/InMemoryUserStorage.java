@@ -19,18 +19,24 @@ public class InMemoryUserStorage implements UserStorage {
   private static void updateUserBirthday(UserPutRequest userRequest, User oldUser) {
     log.trace("Вызывается метод updateUserBirthday");
     oldUser.setBirthday(userRequest.getBirthday());
-    log.trace("Пользователь успешно обновил дату рождения на: {}", oldUser.getBirthday());
+    log.debug("Пользователь успешно обновил дату рождения на: {}", oldUser.getBirthday());
   }
 
   private static void updateUserName(UserPutRequest userRequest, User oldUser) {
     log.trace("Вызывается метод updateUserName");
     oldUser.setName(userRequest.getName());
-    log.trace("Пользователь успешно обновил имя на: {}", oldUser.getName());
+    log.debug("Пользователь успешно обновил имя на: {}", oldUser.getName());
   }
 
   @Override
   public boolean isUserExists(long id) {
+    log.trace("Запрос isUserExists");
     return userHashMap.containsKey(id);
+  }
+
+  public void clearMap() {
+    log.trace("Запрос на очистку userHashMap");
+    userHashMap.clear();
   }
 
   @Override
@@ -105,7 +111,7 @@ public class InMemoryUserStorage implements UserStorage {
       updateUserBirthday(userRequest, oldUser);
     }
 
-    log.debug("Объект успешно обновлен {}", userRequest);
+    log.info("Обновленный объект User - {}", oldUser);
 
     return oldUser;
   }
@@ -114,11 +120,11 @@ public class InMemoryUserStorage implements UserStorage {
   public boolean deleteUser(long id) {
     log.trace("Запрос deleteUser");
     if (!userHashMap.containsKey(id)) {
-      log.trace("По ID {} user не найден", id);
+      log.warn("Ошибка валидации: пользователь по ID - {} не найден", id);
       throw new FilmNotFound(String.format("По ID %d user не найден", id));
     }
     userHashMap.remove(id);
-    log.trace("User по ID {} успешно удален", id);
+    log.debug("User по ID {} успешно удален", id);
     return true;
   }
 
@@ -126,6 +132,7 @@ public class InMemoryUserStorage implements UserStorage {
   public User getUserById(long id) {
     log.trace("Запрос getUserById");
     if (!userHashMap.containsKey(id)) {
+      log.warn("Ошибка валидации: пользователь по ID - {} не найден", id);
       throw new ConditionsNotMetException("Фильм по объекту не найден");
     }
 
@@ -134,13 +141,14 @@ public class InMemoryUserStorage implements UserStorage {
 
   @Override
   public List<User> getUsers() {
-    log.debug("Запрос getAllUsers");
+    log.trace("Запрос getAllUsers");
     return userHashMap.values().stream().toList();
   }
 
   private Long generateId() {
     long currentMaxId = userHashMap.values().stream().mapToLong(User::getId).max().orElse(0);
 
+    log.info("Сгенерирован ID - {}", currentMaxId);
     return ++currentMaxId;
   }
 
@@ -156,7 +164,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     oldUser.setLogin(userRequest.getLogin());
-    log.trace("Пользователь успешно обновил логин на: {}", oldUser.getLogin());
+    log.debug("Пользователь успешно обновил логин на: {}", oldUser.getLogin());
   }
 
   private void updateUserEmail(UserPutRequest userRequest, User oldUser) {
@@ -171,6 +179,6 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     oldUser.setEmail(userRequest.getEmail());
-    log.trace("Пользователь успешно обновил email на: {}", oldUser.getEmail());
+    log.debug("Пользователь успешно обновил email на: {}", oldUser.getEmail());
   }
 }

@@ -3,9 +3,8 @@ package ru.yandex.practicum.filmorate.controller.service;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controller.exceptions.FilmNotFound;
 import ru.yandex.practicum.filmorate.controller.exceptions.UserNotFound;
@@ -19,10 +18,10 @@ import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmResponse;
 
 @Slf4j
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class FilmService {
-  @Autowired public final InMemoryFilmStorage filmStorage;
-  @Autowired public final InMemoryUserStorage userStorage;
+  public final InMemoryFilmStorage filmStorage;
+  public final InMemoryUserStorage userStorage;
 
   public FilmResponse deleteLikeOnFilm(Long filmId, Long userId) {
     log.trace("Вызывается deleteLikeOnFilm: FilmID {} - UserID {}", filmId, userId);
@@ -80,7 +79,7 @@ public class FilmService {
     log.debug("Значение maxPosts = {}", maxPosts);
 
     return filmStorage.getFilms().stream()
-        .sorted(Comparator.comparing(Film::getLikeCount))
+        .sorted(Comparator.comparing(Film::getLikeCount).reversed())
         .limit(maxPosts)
         .map(FilmResponse::new)
         .toList();
@@ -109,5 +108,10 @@ public class FilmService {
   public boolean deleteFilm(Long id) {
     log.trace("Запрос FilmResponse через deleteFilm");
     return filmStorage.deleteFilm(id);
+  }
+
+  public void clearMap() {
+    log.trace("Запрос на очистку через clearMap");
+    filmStorage.clearMap();
   }
 }
