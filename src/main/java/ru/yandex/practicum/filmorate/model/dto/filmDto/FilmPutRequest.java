@@ -6,8 +6,11 @@ import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import java.time.LocalDate;
+import java.util.Set;
 import lombok.Builder;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Rating;
 
 @Data
 @Builder
@@ -31,4 +34,8 @@ public class FilmPutRequest {
   @Positive(message = "Длительность должна быть положительным числом")
   @Builder.Default
   private Integer duration = null;
+
+  @Builder.Default private Set<Genre> genres = null;
+
+  @Builder.Default private Rating rating = null;
 }

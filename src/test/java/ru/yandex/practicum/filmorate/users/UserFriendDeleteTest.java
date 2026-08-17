@@ -25,7 +25,7 @@ import ru.yandex.practicum.filmorate.model.dto.userDto.UserResponse;
 public class UserFriendDeleteTest {
 
   private final String idPath = "$.id";
-  private final String friendSetLengthPath = "$.friendSet.length()";
+  private final String friendSetLengthPath = "$.friendIdSet.length()";
   private final LocalDate date = LocalDate.of(2000, 12, 12);
 
   private UserResponse userOne;
@@ -77,6 +77,7 @@ public class UserFriendDeleteTest {
     userTwo = createUser("test2@yandex.ru", "TEST2");
     userThree = createUser("test3@yandex.ru", "TEST3");
 
+    performAddFriend(userTwo.getId(), userOne.getId()).andExpect(status().isOk());
     performAddFriend(userOne.getId(), userTwo.getId()).andExpect(status().isOk());
   }
 

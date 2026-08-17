@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
+import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import ru.yandex.practicum.filmorate.controller.service.FilmService;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmPostRequest;
 
 @SpringBootTest
@@ -49,9 +52,10 @@ class FilmPostTest {
     FilmPostRequest filmPostRequest =
         FilmPostRequest.builder()
             .name("TEST")
-            .description("TEST")
             .releaseDate(date)
             .duration(120)
+            .genres(Set.of(Genre.DRAMA, Genre.COMEDY))
+            .rating(Rating.PG)
             .build();
 
     performPostFilm(filmPostRequest)
@@ -70,6 +74,8 @@ class FilmPostTest {
             .description(null)
             .releaseDate(date)
             .duration(120)
+            .genres(Set.of(Genre.DRAMA, Genre.COMEDY))
+            .rating(Rating.PG)
             .build();
     FilmPostRequest filmPostRequestSecond =
         FilmPostRequest.builder()
@@ -77,6 +83,8 @@ class FilmPostTest {
             .description(null)
             .releaseDate(date)
             .duration(120)
+            .genres(Set.of(Genre.DRAMA, Genre.COMEDY))
+            .rating(Rating.PG)
             .build();
 
     performPostFilm(filmPostRequestFirst)
@@ -96,6 +104,8 @@ class FilmPostTest {
             .description(null)
             .releaseDate(date)
             .duration(120)
+            .genres(Set.of(Genre.DRAMA, Genre.COMEDY))
+            .rating(Rating.PG)
             .build();
 
     FilmPostRequest filmPostRequestWithBlankDescription =
@@ -104,6 +114,8 @@ class FilmPostTest {
             .description("  ")
             .releaseDate(date)
             .duration(120)
+            .genres(Set.of(Genre.DRAMA, Genre.COMEDY))
+            .rating(Rating.PG)
             .build();
 
     String expectedDescription = "-";
@@ -128,6 +140,8 @@ class FilmPostTest {
             .description("TEST")
             .releaseDate(edgeDate)
             .duration(120)
+            .genres(Set.of(Genre.DRAMA, Genre.COMEDY))
+            .rating(Rating.PG)
             .build();
 
     performPostFilm(filmPostRequest)
@@ -143,6 +157,8 @@ class FilmPostTest {
             .description("TEST")
             .releaseDate(date)
             .duration(1)
+            .genres(Set.of(Genre.DRAMA, Genre.COMEDY))
+            .rating(Rating.PG)
             .build();
 
     Integer expectedDuration = 1;
@@ -160,6 +176,8 @@ class FilmPostTest {
             .description("a".repeat(200))
             .releaseDate(date)
             .duration(120)
+            .genres(Set.of(Genre.DRAMA, Genre.COMEDY))
+            .rating(Rating.PG)
             .build();
 
     String expectedDescriptions = "a".repeat(200);
@@ -181,6 +199,8 @@ class FilmPostTest {
             .description("TEST")
             .releaseDate(incorrectDate)
             .duration(120)
+            .genres(Set.of(Genre.DRAMA, Genre.COMEDY))
+            .rating(Rating.PG)
             .build();
 
     performPostFilm(filmPostRequest).andExpect(status().isBadRequest());
@@ -194,6 +214,8 @@ class FilmPostTest {
             .description(null)
             .releaseDate(date)
             .duration(120)
+            .genres(Set.of(Genre.DRAMA, Genre.COMEDY))
+            .rating(Rating.PG)
             .build();
     FilmPostRequest filmPostRequestSecond =
         FilmPostRequest.builder()
@@ -201,6 +223,8 @@ class FilmPostTest {
             .description(null)
             .releaseDate(date)
             .duration(120)
+            .genres(Set.of(Genre.DRAMA, Genre.COMEDY))
+            .rating(Rating.PG)
             .build();
 
     performPostFilm(filmPostRequestFirst).andExpect(status().isCreated());
@@ -222,6 +246,8 @@ class FilmPostTest {
             .description("TEST")
             .releaseDate(null)
             .duration(120)
+            .genres(Set.of(Genre.DRAMA, Genre.COMEDY))
+            .rating(Rating.PG)
             .build();
 
     performPostFilm(filmPostRequest).andExpect(status().isBadRequest());
@@ -235,6 +261,8 @@ class FilmPostTest {
             .description("TEST")
             .releaseDate(date)
             .duration(0)
+            .genres(Set.of(Genre.DRAMA, Genre.COMEDY))
+            .rating(Rating.PG)
             .build();
 
     performPostFilm(filmPostRequest).andExpect(status().isBadRequest());
@@ -248,6 +276,8 @@ class FilmPostTest {
             .description("a".repeat(201))
             .releaseDate(date)
             .duration(120)
+            .genres(Set.of(Genre.DRAMA, Genre.COMEDY))
+            .rating(Rating.PG)
             .build();
 
     performPostFilm(filmPostRequest).andExpect(status().isBadRequest());
@@ -261,6 +291,8 @@ class FilmPostTest {
             .description("TEST")
             .releaseDate(date)
             .duration(120)
+            .genres(Set.of(Genre.DRAMA, Genre.COMEDY))
+            .rating(Rating.PG)
             .build();
 
     performPostFilm(filmPostRequest).andExpect(status().isBadRequest());

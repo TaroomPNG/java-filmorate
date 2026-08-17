@@ -91,6 +91,7 @@ public class UserFriendGetTest {
 
   @Test
   void getAllFriendsAfterAdd() throws Exception {
+    performAddFriend(userTwo.getId(), userOne.getId());
     performAddFriend(userOne.getId(), userTwo.getId()).andExpect(status().isOk());
 
     performGetFriends(userOne.getId())
@@ -115,6 +116,9 @@ public class UserFriendGetTest {
   void getCommonFriendsWithOneCommon() throws Exception {
     performAddFriend(userOne.getId(), userThree.getId()).andExpect(status().isOk());
     performAddFriend(userTwo.getId(), userThree.getId()).andExpect(status().isOk());
+
+    performAddFriend(userThree.getId(), userOne.getId()).andExpect(status().isOk());
+    performAddFriend(userThree.getId(), userTwo.getId()).andExpect(status().isOk());
 
     performGetCommonFriends(userOne.getId(), userTwo.getId())
         .andExpect(status().isOk())

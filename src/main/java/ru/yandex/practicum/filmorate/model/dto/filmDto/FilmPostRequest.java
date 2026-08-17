@@ -6,8 +6,11 @@ import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import java.time.LocalDate;
+import java.util.Set;
 import lombok.Builder;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Rating;
 
 @Data
 @Builder
@@ -18,7 +21,7 @@ public class FilmPostRequest {
 
   @Pattern(regexp = "^[a-zA-Z0-9а-яА-Я _-]{1,200}$", message = "Некорректное описание фильма")
   @Builder.Default
-  private String description = null;
+  private String description = "-";
 
   @NotNull(message = "Дата обязательна")
   @PastOrPresent(message = "Дата релиза не может быть в будущем")
@@ -28,4 +31,8 @@ public class FilmPostRequest {
   @NotNull(message = "Длительность обязательна")
   @Positive(message = "Длительность должна быть положительным числом")
   private Integer duration;
+
+  @NotNull private Set<Genre> genres;
+
+  @NotNull private Rating rating;
 }

@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
+import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import ru.yandex.practicum.filmorate.controller.service.FilmService;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmResponse;
 
@@ -49,7 +52,13 @@ public class FilmGetTest {
 
     MvcResult postResult =
         performPostFilm(
-                FilmPostRequest.builder().name("TEST").releaseDate(date).duration(120).build())
+                FilmPostRequest.builder()
+                    .name("TEST")
+                    .releaseDate(date)
+                    .duration(120)
+                    .genres(Set.of(Genre.DRAMA, Genre.COMEDY))
+                    .rating(Rating.PG)
+                    .build())
             .andReturn();
 
     postResponse =
@@ -75,10 +84,22 @@ public class FilmGetTest {
   @Test
   void getManyFilms() throws Exception {
     performPostFilm(
-        FilmPostRequest.builder().name("TEST1").releaseDate(date).duration(120).build());
+        FilmPostRequest.builder()
+            .name("TEST1")
+            .releaseDate(date)
+            .duration(120)
+            .genres(Set.of(Genre.DRAMA, Genre.COMEDY))
+            .rating(Rating.PG)
+            .build());
 
     performPostFilm(
-        FilmPostRequest.builder().name("TEST2").releaseDate(date).duration(120).build());
+        FilmPostRequest.builder()
+            .name("TEST2")
+            .releaseDate(date)
+            .duration(120)
+            .genres(Set.of(Genre.DRAMA, Genre.COMEDY))
+            .rating(Rating.PG)
+            .build());
 
     performGetFilm()
         .andExpect(status().isOk())

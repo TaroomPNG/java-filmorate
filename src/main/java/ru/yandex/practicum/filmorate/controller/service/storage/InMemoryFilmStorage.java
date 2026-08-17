@@ -87,7 +87,9 @@ public class InMemoryFilmStorage implements FilmStorage {
             filmPostRequest.getName(),
             filmPostRequest.getDescription(),
             filmPostRequest.getReleaseDate(),
-            filmPostRequest.getDuration());
+            filmPostRequest.getDuration(),
+            filmPostRequest.getGenres(),
+            filmPostRequest.getRating());
 
     log.debug("Сформирован объект {}", newFilm);
 

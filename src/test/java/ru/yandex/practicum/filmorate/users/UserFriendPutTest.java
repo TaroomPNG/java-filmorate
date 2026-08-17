@@ -25,8 +25,8 @@ import ru.yandex.practicum.filmorate.model.dto.userDto.UserResponse;
 public class UserFriendPutTest {
 
   private final String idPath = "$.id";
-  private final String friendSetLengthPath = "$.friendSet.length()";
-  private final String firstFriendIdPath = "$.friendSet[0].id";
+  private final String friendSetLengthPath = "$.friendIdSet.length()";
+  private final String firstFriendIdPath = "$.friendIdSet[0]";
   private final LocalDate date = LocalDate.of(2000, 12, 12);
 
   private UserResponse userOne;
@@ -51,6 +51,11 @@ public class UserFriendPutTest {
 
   private ResultActions performGetFriends(Long id) throws Exception {
     return mockMvc.perform(get("/users/{id}/friends", id).accept(MediaType.APPLICATION_JSON));
+  }
+
+  private ResultActions performGetFriendsRequests(Long id) throws Exception {
+    return mockMvc.perform(
+        get("/users/{id}/friends/requests", id).accept(MediaType.APPLICATION_JSON));
   }
 
   @BeforeEach
@@ -87,6 +92,7 @@ public class UserFriendPutTest {
 
   @Test
   void addCorrectFriend() throws Exception {
+    performAddFriend(userTwo.getId(), userOne.getId());
     performAddFriend(userOne.getId(), userTwo.getId())
         .andExpect(status().isOk())
         .andExpect(jsonPath(idPath).value(userOne.getId()))
@@ -95,30 +101,15 @@ public class UserFriendPutTest {
   }
 
   @Test
-  void addFriendIsMutual() throws Exception {
-    performAddFriend(userOne.getId(), userTwo.getId()).andExpect(status().isOk());
-
-    performGetFriends(userTwo.getId())
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(1))
-        .andExpect(jsonPath("$[0].id").value(userOne.getId()));
-  }
-
-  @Test
-  void addFriendTwiceIsIdempotent() throws Exception {
-    performAddFriend(userOne.getId(), userTwo.getId()).andExpect(status().isOk());
-
+  void addFriendRequest() throws Exception {
     performAddFriend(userOne.getId(), userTwo.getId())
         .andExpect(status().isOk())
-        .andExpect(jsonPath(friendSetLengthPath).value(1));
-  }
+        .andExpect(jsonPath(friendSetLengthPath).value(0));
 
-  @Test
-  void addSelfAsFriend() throws Exception {
-    performAddFriend(userOne.getId(), userOne.getId())
+    performGetFriendsRequests(userOne.getId())
         .andExpect(status().isOk())
-        .andExpect(jsonPath(friendSetLengthPath).value(1))
-        .andExpect(jsonPath(firstFriendIdPath).value(userOne.getId()));
+        .andExpect(jsonPath("$.length()").value(1))
+        .andExpect(jsonPath("$[0].id").value(2));
   }
 
   // Тест ошибочных значений
@@ -131,5 +122,14 @@ public class UserFriendPutTest {
   @Test
   void addFriendWithNonexistentUserId() throws Exception {
     performAddFriend(9999L, userTwo.getId()).andExpect(status().isNotFound());
+  }
+
+  @Test
+  void addFriendTwice() throws Exception {
+    performAddFriend(userOne.getId(), userTwo.getId()).andExpect(status().isOk());
+
+    performAddFriend(userOne.getId(), userTwo.getId()).andExpect(status().isConflict());
+
+    performGetFriendsRequests(userOne.getId()).andExpect(jsonPath("$.length()").value(1));
   }
 }

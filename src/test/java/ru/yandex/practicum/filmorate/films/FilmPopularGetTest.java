@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
+import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,8 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import ru.yandex.practicum.filmorate.controller.service.FilmService;
 import ru.yandex.practicum.filmorate.controller.service.UserService;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmResponse;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserPostRequest;
@@ -67,7 +70,13 @@ public class FilmPopularGetTest {
   private FilmResponse createFilm(String name) throws Exception {
     MvcResult result =
         performPostFilm(
-                FilmPostRequest.builder().name(name).releaseDate(date).duration(120).build())
+                FilmPostRequest.builder()
+                    .name(name)
+                    .releaseDate(date)
+                    .duration(120)
+                    .genres(Set.of(Genre.DRAMA, Genre.COMEDY))
+                    .rating(Rating.PG)
+                    .build())
             .andReturn();
     return objectMapper.readValue(result.getResponse().getContentAsString(), FilmResponse.class);
   }
