@@ -12,6 +12,7 @@ logs
 *.tar.gz
 *.rar
 hs_err_pid*
+logs/
 out/
 target/
 !.mvn/wrapper/maven-wrapper.jar
@@ -48,3 +49,7 @@ build/
 
 *.db
 db/*
+
+### Cursor ###
+.cursor
+.docs

@@ -55,7 +55,7 @@ public class UserPostTest {
             .build();
 
     performPostUser(userPostRequest)
-        .andExpect(status().isOk())
+        .andExpect(status().isCreated())
         .andExpect(jsonPath(emailPath).value(userPostRequest.getEmail()))
         .andExpect(jsonPath(loginPath).value(userPostRequest.getLogin()))
         .andExpect(jsonPath(birthdayPath).value(userPostRequest.getBirthday().toString()))
@@ -80,11 +80,11 @@ public class UserPostTest {
             .build();
 
     performPostUser(userPostRequestFirst)
-        .andExpect(status().isOk())
+        .andExpect(status().isCreated())
         .andExpect(jsonPath(idPath).value(1));
 
     performPostUser(userPostRequestSecond)
-        .andExpect(status().isOk())
+        .andExpect(status().isCreated())
         .andExpect(jsonPath(idPath).value(2));
   }
 
@@ -94,7 +94,7 @@ public class UserPostTest {
         UserPostRequest.builder().email("test@yandex.ru").login("TEST").birthday(date).build();
 
     performPostUser(userPostRequest)
-        .andExpect(status().isOk())
+        .andExpect(status().isCreated())
         .andExpect(jsonPath(namePath).value(userPostRequest.getLogin()));
   }
 
@@ -108,7 +108,7 @@ public class UserPostTest {
         UserPostRequest.builder().email("test1@yandex.ru").login("TEST").birthday(date).build();
 
     performPostUser(userPostRequestFirst)
-        .andExpect(status().isOk())
+        .andExpect(status().isCreated())
         .andExpect(jsonPath(loginPath).value(userPostRequestFirst.getLogin()));
     performPostUser(userPostRequestSecond).andExpect(status().isBadRequest());
   }
@@ -121,7 +121,7 @@ public class UserPostTest {
         UserPostRequest.builder().email("test@yandex.ru").login("TEST2").birthday(date).build();
 
     performPostUser(userPostRequestFirst)
-        .andExpect(status().isOk())
+        .andExpect(status().isCreated())
         .andExpect(jsonPath(emailPath).value(userPostRequestFirst.getEmail()));
     performPostUser(userPostRequestSecond).andExpect(status().isBadRequest());
   }
