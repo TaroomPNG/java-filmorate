@@ -1,3 +1,7 @@
+.cursor
+.docs
+.gitignore
+logs
 *.class
 *.log
 *.jar
