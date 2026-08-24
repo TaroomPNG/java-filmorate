@@ -22,8 +22,8 @@ public class FilmResponse {
   private String description;
   private LocalDate releaseDate;
   private Integer duration;
-  private Set<Genre> genre;
-  private Rating rating;
+  private Set<Genre> genres;
+  private Rating mpa;
   @Builder.Default private final Set<UserResponse> likeIds = new LinkedHashSet<>();
 
   public FilmResponse(Film film) {
@@ -33,7 +33,7 @@ public class FilmResponse {
     this.releaseDate = film.getReleaseDate();
     this.duration = film.getDuration();
     this.likeIds = film.getUserLikeResponse();
-    this.genre = film.getGenres();
-    this.rating = film.getRating();
+    this.genres = film.getGenres();
+    this.mpa = film.getMpa();
   }
 }

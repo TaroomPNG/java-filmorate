@@ -1,11 +1,12 @@
 package ru.yandex.practicum.filmorate.model.dto.filmDto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PastOrPresent;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import lombok.Builder;
 import lombok.Data;
@@ -18,15 +19,12 @@ public class FilmPutRequest {
   @NotNull(message = "ID обязателен")
   private Long id;
 
-  @Pattern(regexp = "^[a-zA-Z0-9а-яА-Я_\\s-]{1,200}$", message = "Некорректное название фильма")
-  @Builder.Default
-  private String name = null;
+  @Builder.Default private String name = null;
 
-  @Pattern(regexp = "^[a-zA-Z0-9а-яА-Я _-]{1,200}$", message = "Некорректное описание фильма")
+  @Size(max = 200, message = "Описание не может быть длиннее 200 символов")
   @Builder.Default
   private String description = null;
 
-  @PastOrPresent(message = "Дата релиза не может быть в будущем")
   @JsonFormat(pattern = "yyyy-MM-dd")
   @Builder.Default
   private LocalDate releaseDate = null;
@@ -35,7 +33,9 @@ public class FilmPutRequest {
   @Builder.Default
   private Integer duration = null;
 
-  @Builder.Default private Set<Genre> genres = null;
+  @JsonDeserialize(as = LinkedHashSet.class)
+  @Builder.Default
+  private Set<Genre> genres = null;
 
-  @Builder.Default private Rating rating = null;
+  @Builder.Default private Rating mpa = null;
 }

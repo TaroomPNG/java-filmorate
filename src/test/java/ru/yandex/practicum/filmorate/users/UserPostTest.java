@@ -1,164 +1,58 @@
 package ru.yandex.practicum.filmorate.users;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.LocalDate;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
-import ru.yandex.practicum.filmorate.controller.service.UserService;
+import org.springframework.dao.DuplicateKeyException;
+import ru.yandex.practicum.filmorate.DaoTest;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserPostRequest;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-public class UserPostTest {
+class UserPostTest extends DaoTest {
 
-  private final String idPath = "$.id";
-  private final String emailPath = "$.email";
-  private final String loginPath = "$.login";
-  private final String namePath = "$.name";
-  private final String birthdayPath = "$.birthday";
-  private final LocalDate date = LocalDate.of(2000, 12, 12);
-  @Autowired private MockMvc mockMvc;
-  @Autowired private ObjectMapper objectMapper;
-  @Autowired private UserService userService;
+  @Test
+  void addCorrectUser() {
+    User user = addUser("test@yandex.ru", "TEST");
 
-  private ResultActions performPostUser(UserPostRequest userPostRequest) throws Exception {
-    return mockMvc.perform(
-        post("/users")
-            .contentType(MediaType.APPLICATION_JSON)
-            .accept(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(userPostRequest)));
-  }
-
-  @AfterEach
-  void cleanUp() {
-    userService.clearMap();
+    assertThat(user)
+        .hasFieldOrPropertyWithValue("email", "test@yandex.ru")
+        .hasFieldOrPropertyWithValue("login", "TEST")
+        .hasFieldOrPropertyWithValue("name", "TEST")
+        .hasFieldOrPropertyWithValue("birthday", DATE);
   }
 
   @Test
-  void addCorrectUser() throws Exception {
-    UserPostRequest userPostRequest =
-        UserPostRequest.builder()
-            .email("test@yandex.ru")
-            .login("TEST")
-            .birthday(date)
-            .name("TEST")
-            .build();
+  void add2CorrectUsers() {
+    User first = addUser("test@yandex.ru", "TEST");
+    User second = addUser("test2@yandex.ru", "TEST2");
 
-    performPostUser(userPostRequest)
-        .andExpect(status().isCreated())
-        .andExpect(jsonPath(emailPath).value(userPostRequest.getEmail()))
-        .andExpect(jsonPath(loginPath).value(userPostRequest.getLogin()))
-        .andExpect(jsonPath(birthdayPath).value(userPostRequest.getBirthday().toString()))
-        .andExpect(jsonPath(namePath).value(userPostRequest.getName()));
+    assertThat(first.getId()).isEqualTo(1L);
+    assertThat(second.getId()).isEqualTo(2L);
   }
 
   @Test
-  void add2CorrectUsers() throws Exception {
-    UserPostRequest userPostRequestFirst =
-        UserPostRequest.builder()
-            .email("test@yandex.ru")
-            .login("TEST")
-            .birthday(date)
-            .name("TEST")
-            .build();
-    UserPostRequest userPostRequestSecond =
-        UserPostRequest.builder()
-            .email("test2@yandex.ru")
-            .login("TEST2")
-            .birthday(date)
-            .name("TEST")
-            .build();
+  void addUserWithoutName() {
+    User user =
+        userStorage.addUser(
+            UserPostRequest.builder().email("test@yandex.ru").login("TEST").birthday(DATE).build());
 
-    performPostUser(userPostRequestFirst)
-        .andExpect(status().isCreated())
-        .andExpect(jsonPath(idPath).value(1));
-
-    performPostUser(userPostRequestSecond)
-        .andExpect(status().isCreated())
-        .andExpect(jsonPath(idPath).value(2));
+    assertThat(user.getName()).isEqualTo("TEST");
   }
 
   @Test
-  void addUserWithoutName() throws Exception {
-    UserPostRequest userPostRequest =
-        UserPostRequest.builder().email("test@yandex.ru").login("TEST").birthday(date).build();
+  void add2UsersWithSameLogin() {
+    addUser("test@yandex.ru", "TEST");
 
-    performPostUser(userPostRequest)
-        .andExpect(status().isCreated())
-        .andExpect(jsonPath(namePath).value(userPostRequest.getLogin()));
-  }
-
-  // Тест ошибочных значений
-  @Test
-  void add2UsersWithSameLogin() throws Exception {
-    UserPostRequest userPostRequestFirst =
-        UserPostRequest.builder().email("test@yandex.ru").login("TEST").birthday(date).build();
-
-    UserPostRequest userPostRequestSecond =
-        UserPostRequest.builder().email("test1@yandex.ru").login("TEST").birthday(date).build();
-
-    performPostUser(userPostRequestFirst)
-        .andExpect(status().isCreated())
-        .andExpect(jsonPath(loginPath).value(userPostRequestFirst.getLogin()));
-    performPostUser(userPostRequestSecond).andExpect(status().isBadRequest());
+    assertThatThrownBy(() -> addUser("test1@yandex.ru", "TEST"))
+        .isInstanceOf(DuplicateKeyException.class);
   }
 
   @Test
-  void add2UsersWithSameEmail() throws Exception {
-    UserPostRequest userPostRequestFirst =
-        UserPostRequest.builder().email("test@yandex.ru").login("TEST").birthday(date).build();
-    UserPostRequest userPostRequestSecond =
-        UserPostRequest.builder().email("test@yandex.ru").login("TEST2").birthday(date).build();
+  void add2UsersWithSameEmail() {
+    addUser("test@yandex.ru", "TEST");
 
-    performPostUser(userPostRequestFirst)
-        .andExpect(status().isCreated())
-        .andExpect(jsonPath(emailPath).value(userPostRequestFirst.getEmail()));
-    performPostUser(userPostRequestSecond).andExpect(status().isBadRequest());
-  }
-
-  // Тест валидации параметров
-
-  @Test
-  void addNullUserObject() throws Exception {
-    performPostUser(null).andExpect(status().isInternalServerError());
-  }
-
-  @Test
-  void addIncorrectUserEmail() throws Exception {
-    UserPostRequest userPostRequest =
-        UserPostRequest.builder().email("testyandex.ru").login("TEST").birthday(date).build();
-
-    performPostUser(userPostRequest).andExpect(status().isBadRequest());
-  }
-
-  @Test
-  void addIncorrectUserLogin() throws Exception {
-    UserPostRequest userPostRequest =
-        UserPostRequest.builder().email("test@yandex.ru").login("  ").birthday(date).build();
-
-    performPostUser(userPostRequest).andExpect(status().isBadRequest());
-  }
-
-  @Test
-  void addUserWithIncorrectDate() throws Exception {
-    UserPostRequest userPostRequest =
-        UserPostRequest.builder()
-            .email("test@yandex.ru")
-            .login("TEST")
-            .birthday(LocalDate.now().plusDays(1))
-            .name("TEST")
-            .build();
-
-    performPostUser(userPostRequest).andExpect(status().isBadRequest());
+    assertThatThrownBy(() -> addUser("test@yandex.ru", "TEST2"))
+        .isInstanceOf(DuplicateKeyException.class);
   }
 }

@@ -17,20 +17,8 @@ public class Film {
   private LocalDate releaseDate;
   private Integer duration;
   private Set<Genre> genres;
-  private Rating rating;
+  private Rating mpa;
   private final Set<User> likeIds = new LinkedHashSet<>();
-
-  public void addLike(User user) {
-    likeIds.add(user);
-  }
-
-  public void deleteLike(User user) {
-    likeIds.remove(user);
-  }
-
-  public boolean isLikeExists(User user) {
-    return likeIds.contains(user);
-  }
 
   public Set<UserResponse> getUserLikeResponse() {
     return this.likeIds.stream()

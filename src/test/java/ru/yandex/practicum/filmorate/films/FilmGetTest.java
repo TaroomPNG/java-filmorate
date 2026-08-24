@@ -1,111 +1,80 @@
 package ru.yandex.practicum.filmorate.films;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.ResultActions;
-import ru.yandex.practicum.filmorate.controller.service.FilmService;
+import ru.yandex.practicum.filmorate.DaoTest;
+import ru.yandex.practicum.filmorate.controller.exceptions.FilmNotFound;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
-import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmPostRequest;
-import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmResponse;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-public class FilmGetTest {
+class FilmGetTest extends DaoTest {
 
-  @Autowired private MockMvc mockMvc;
-  @Autowired private ObjectMapper objectMapper;
-  @Autowired private FilmService filmService;
+  @Test
+  void getOneFilm() {
+    Film created = addFilm("TEST");
 
-  private FilmResponse postResponse;
-  private LocalDate date;
+    List<Film> films = filmStorage.getFilms();
 
-  private ResultActions performPostFilm(FilmPostRequest request) throws Exception {
-    return mockMvc.perform(
-        post("/films")
-            .contentType(MediaType.APPLICATION_JSON)
-            .accept(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)));
-  }
-
-  private ResultActions performGetFilm() throws Exception {
-    return mockMvc.perform(get("/films").accept(MediaType.APPLICATION_JSON));
-  }
-
-  @BeforeEach
-  void setUp() throws Exception {
-    date = LocalDate.of(2000, 12, 12);
-
-    MvcResult postResult =
-        performPostFilm(
-                FilmPostRequest.builder()
-                    .name("TEST")
-                    .releaseDate(date)
-                    .duration(120)
-                    .genres(Set.of(Genre.DRAMA, Genre.COMEDY))
-                    .rating(Rating.PG)
-                    .build())
-            .andReturn();
-
-    postResponse =
-        objectMapper.readValue(postResult.getResponse().getContentAsString(), FilmResponse.class);
-  }
-
-  @AfterEach
-  void cleanUp() {
-    filmService.clearMap();
+    assertThat(films).hasSize(1);
+    assertThat(films.getFirst())
+        .hasFieldOrPropertyWithValue("id", created.getId())
+        .hasFieldOrPropertyWithValue("name", "TEST")
+        .hasFieldOrPropertyWithValue("description", "-")
+        .hasFieldOrPropertyWithValue("releaseDate", DATE)
+        .hasFieldOrPropertyWithValue("duration", 120);
+    assertThat(films.getFirst().getMpa()).hasFieldOrPropertyWithValue("id", 2);
+    assertThat(films.getFirst().getGenres()).hasSize(2);
   }
 
   @Test
-  void getOneFilm() throws Exception {
-    performGetFilm()
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$[0].id").value(postResponse.getId()))
-        .andExpect(jsonPath("$[0].name").value("TEST"))
-        .andExpect(jsonPath("$[0].description").value("-"))
-        .andExpect(jsonPath("$[0].releaseDate").value("2000-12-12"))
-        .andExpect(jsonPath("$[0].duration").value(120));
+  void getManyFilms() {
+    addFilm("TEST");
+    addFilm("TEST1");
+    addFilm("TEST2");
+
+    List<Film> films = filmStorage.getFilms();
+
+    assertThat(films).extracting(Film::getId).containsExactly(1L, 2L, 3L);
   }
 
   @Test
-  void getManyFilms() throws Exception {
-    performPostFilm(
-        FilmPostRequest.builder()
-            .name("TEST1")
-            .releaseDate(date)
-            .duration(120)
-            .genres(Set.of(Genre.DRAMA, Genre.COMEDY))
-            .rating(Rating.PG)
-            .build());
+  void getFilmById() {
+    Film created = addFilm("TEST", Set.of(Genre.DRAMA, Genre.COMEDY), Rating.PG);
 
-    performPostFilm(
-        FilmPostRequest.builder()
-            .name("TEST2")
-            .releaseDate(date)
-            .duration(120)
-            .genres(Set.of(Genre.DRAMA, Genre.COMEDY))
-            .rating(Rating.PG)
-            .build());
+    Film film = filmStorage.getFilmById(created.getId());
 
-    performGetFilm()
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(3))
-        .andExpect(jsonPath("$[0].id").value(1))
-        .andExpect(jsonPath("$[1].id").value(2))
-        .andExpect(jsonPath("$[2].id").value(3));
+    assertThat(film)
+        .hasFieldOrPropertyWithValue("id", created.getId())
+        .hasFieldOrPropertyWithValue("name", "TEST");
+    assertThat(film.getMpa()).hasFieldOrPropertyWithValue("id", 2);
+    assertThat(film.getMpa()).hasFieldOrPropertyWithValue("name", "PG");
+    assertThat(film.getGenres()).extracting(Genre::getId).containsExactlyInAnyOrder(1, 2);
+  }
+
+  @Test
+  void getFilmByIdNotFound() {
+    assertThatThrownBy(() -> filmStorage.getFilmById(9999L)).isInstanceOf(FilmNotFound.class);
+  }
+
+  @Test
+  void isFilmExists() {
+    Film created = addFilm("TEST");
+
+    assertThat(filmStorage.isFilmExists(created.getId())).isTrue();
+    assertThat(filmStorage.isFilmExists(9999L)).isFalse();
+  }
+
+  @Test
+  void getFilmGenres() {
+    Film created = addFilm("GENRES", Set.of(Genre.DRAMA, Genre.COMEDY), Rating.PG);
+
+    assertThat(filmStorage.getFilmGenres(created.getId()))
+        .extracting(Genre::getId)
+        .containsExactly(1, 2);
   }
 }

@@ -4,11 +4,14 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.controller.exceptions.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.controller.exceptions.FilmNotFound;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmPutRequest;
 
@@ -89,7 +92,7 @@ public class InMemoryFilmStorage implements FilmStorage {
             filmPostRequest.getReleaseDate(),
             filmPostRequest.getDuration(),
             filmPostRequest.getGenres(),
-            filmPostRequest.getRating());
+            filmPostRequest.getMpa());
 
     log.debug("Сформирован объект {}", newFilm);
 
@@ -170,6 +173,76 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     return filmHashMap.values().stream().toList();
+  }
+
+  @Override
+  public Set<Genre> getFilmGenres(long id) {
+    return getFilmById(id).getGenres();
+  }
+
+  @Override
+  public List<Genre> getGenres() {
+    return List.of(
+        Genre.COMEDY,
+        Genre.DRAMA,
+        Genre.CARTOON,
+        Genre.THRILLER,
+        Genre.DOCUMENTARY,
+        Genre.ACTION_MOVIE);
+  }
+
+  @Override
+  public Genre getGenreById(long id) {
+    return getGenres().stream()
+        .filter(genre -> genre.getId() == id)
+        .findFirst()
+        .orElseThrow(() -> new FilmNotFound(id));
+  }
+
+  @Override
+  public List<Rating> getRatings() {
+    return List.of(Rating.G, Rating.PG, Rating.PG_13, Rating.R, Rating.NC_17);
+  }
+
+  @Override
+  public Rating getRatingById(long id) {
+    return getRatings().stream()
+        .filter(rating -> rating.getId() == id)
+        .findFirst()
+        .orElseThrow(() -> new FilmNotFound(id));
+  }
+
+  @Override
+  public boolean isGenreExists(long id) {
+    return getGenres().stream().anyMatch(genre -> genre.getId() == id);
+  }
+
+  @Override
+  public boolean isRatingExists(long id) {
+    return getRatings().stream().anyMatch(rating -> rating.getId() == id);
+  }
+
+  @Override
+  public void addLike(long filmId, long userId) {
+    // likes are stored on the Film object in memory
+  }
+
+  @Override
+  public void removeLike(long filmId, long userId) {
+    // likes are stored on the Film object in memory
+  }
+
+  @Override
+  public List<Film> getPopular(int count) {
+    return getFilms().stream()
+        .sorted((a, b) -> Integer.compare(b.getLikeCount(), a.getLikeCount()))
+        .limit(count)
+        .toList();
+  }
+
+  @Override
+  public void clear() {
+    clearMap();
   }
 
   private Long generateId() {

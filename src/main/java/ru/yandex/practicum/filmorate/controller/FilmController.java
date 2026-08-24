@@ -15,6 +15,7 @@ import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmResponse;
 @RequestMapping("/films")
 @RequiredArgsConstructor
 public class FilmController {
+
   @Getter private final FilmService filmService;
 
   @GetMapping
@@ -67,4 +68,6 @@ public class FilmController {
       @RequestParam(required = false, defaultValue = "10") int count) {
     return filmService.getTopFilms(count);
   }
+
+
 }

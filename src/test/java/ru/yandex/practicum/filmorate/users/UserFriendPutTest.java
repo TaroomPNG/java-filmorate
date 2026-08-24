@@ -1,135 +1,35 @@
 package ru.yandex.practicum.filmorate.users;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.LocalDate;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.ResultActions;
-import ru.yandex.practicum.filmorate.controller.service.UserService;
-import ru.yandex.practicum.filmorate.model.dto.userDto.UserPostRequest;
-import ru.yandex.practicum.filmorate.model.dto.userDto.UserResponse;
+import ru.yandex.practicum.filmorate.DaoTest;
+import ru.yandex.practicum.filmorate.model.User;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-public class UserFriendPutTest {
+class UserFriendPutTest extends DaoTest {
 
-  private final String idPath = "$.id";
-  private final String friendSetLengthPath = "$.friendIdSet.length()";
-  private final String firstFriendIdPath = "$.friendIdSet[0]";
-  private final LocalDate date = LocalDate.of(2000, 12, 12);
+  @Test
+  void addCorrectFriend() {
+    User userOne = addUser("test@yandex.ru", "TEST");
+    User userTwo = addUser("test2@yandex.ru", "TEST2");
 
-  private UserResponse userOne;
-  private UserResponse userTwo;
+    userStorage.addFriend(userOne.getId(), userTwo.getId());
 
-  @Autowired private MockMvc mockMvc;
-  @Autowired private ObjectMapper objectMapper;
-  @Autowired private UserService userService;
-
-  private ResultActions performPostUser(UserPostRequest request) throws Exception {
-    return mockMvc.perform(
-        post("/users")
-            .contentType(MediaType.APPLICATION_JSON)
-            .accept(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)));
-  }
-
-  private ResultActions performAddFriend(Long id, Long friendId) throws Exception {
-    return mockMvc.perform(
-        put("/users/{id}/friends/{friendId}", id, friendId).accept(MediaType.APPLICATION_JSON));
-  }
-
-  private ResultActions performGetFriends(Long id) throws Exception {
-    return mockMvc.perform(get("/users/{id}/friends", id).accept(MediaType.APPLICATION_JSON));
-  }
-
-  private ResultActions performGetFriendsRequests(Long id) throws Exception {
-    return mockMvc.perform(
-        get("/users/{id}/friends/requests", id).accept(MediaType.APPLICATION_JSON));
-  }
-
-  @BeforeEach
-  void setUp() throws Exception {
-    MvcResult resultOne =
-        performPostUser(
-                UserPostRequest.builder()
-                    .email("test@yandex.ru")
-                    .login("TEST")
-                    .birthday(date)
-                    .name("TEST")
-                    .build())
-            .andReturn();
-    userOne =
-        objectMapper.readValue(resultOne.getResponse().getContentAsString(), UserResponse.class);
-
-    MvcResult resultTwo =
-        performPostUser(
-                UserPostRequest.builder()
-                    .email("test2@yandex.ru")
-                    .login("TEST2")
-                    .birthday(date)
-                    .name("TEST2")
-                    .build())
-            .andReturn();
-    userTwo =
-        objectMapper.readValue(resultTwo.getResponse().getContentAsString(), UserResponse.class);
-  }
-
-  @AfterEach
-  void cleanUp() {
-    userService.clearMap();
+    assertThat(userStorage.isFriend(userOne.getId(), userTwo.getId())).isTrue();
+    assertThat(userStorage.getFriends(userOne.getId()))
+        .extracting(User::getId)
+        .containsExactly(userTwo.getId());
+    assertThat(userStorage.getFriends(userTwo.getId())).isEmpty();
   }
 
   @Test
-  void addCorrectFriend() throws Exception {
-    performAddFriend(userTwo.getId(), userOne.getId());
-    performAddFriend(userOne.getId(), userTwo.getId())
-        .andExpect(status().isOk())
-        .andExpect(jsonPath(idPath).value(userOne.getId()))
-        .andExpect(jsonPath(friendSetLengthPath).value(1))
-        .andExpect(jsonPath(firstFriendIdPath).value(userTwo.getId()));
-  }
+  void addFriendTwice() {
+    User userOne = addUser("test@yandex.ru", "TEST");
+    User userTwo = addUser("test2@yandex.ru", "TEST2");
 
-  @Test
-  void addFriendRequest() throws Exception {
-    performAddFriend(userOne.getId(), userTwo.getId())
-        .andExpect(status().isOk())
-        .andExpect(jsonPath(friendSetLengthPath).value(0));
+    userStorage.addFriend(userOne.getId(), userTwo.getId());
+    userStorage.addFriend(userOne.getId(), userTwo.getId());
 
-    performGetFriendsRequests(userOne.getId())
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(1))
-        .andExpect(jsonPath("$[0].id").value(2));
-  }
-
-  // Тест ошибочных значений
-
-  @Test
-  void addFriendWithNonexistentFriendId() throws Exception {
-    performAddFriend(userOne.getId(), 9999L).andExpect(status().isNotFound());
-  }
-
-  @Test
-  void addFriendWithNonexistentUserId() throws Exception {
-    performAddFriend(9999L, userTwo.getId()).andExpect(status().isNotFound());
-  }
-
-  @Test
-  void addFriendTwice() throws Exception {
-    performAddFriend(userOne.getId(), userTwo.getId()).andExpect(status().isOk());
-
-    performAddFriend(userOne.getId(), userTwo.getId()).andExpect(status().isConflict());
-
-    performGetFriendsRequests(userOne.getId()).andExpect(jsonPath("$.length()").value(1));
+    assertThat(userStorage.getFriends(userOne.getId())).hasSize(1);
   }
 }
