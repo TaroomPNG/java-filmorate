@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.controller.exceptions.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.controller.exceptions.FilmNotFound;
 import ru.yandex.practicum.filmorate.controller.exceptions.UserNotFound;
+import ru.yandex.practicum.filmorate.model.FriendStatus;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserPutRequest;
@@ -143,6 +144,39 @@ public class InMemoryUserStorage implements UserStorage {
   public List<User> getUsers() {
     log.trace("Запрос getAllUsers");
     return userHashMap.values().stream().toList();
+  }
+
+  @Override
+  public void addFriend(long userId, long friendId) {
+    getUserById(userId).setFriendStatus(friendId, FriendStatus.CONFIRMED);
+  }
+
+  @Override
+  public void removeFriend(long userId, long friendId) {
+    getUserById(userId).deleteFriend(friendId);
+  }
+
+  @Override
+  public boolean isFriend(long userId, long friendId) {
+    return getUserById(userId).isFriendExist(friendId);
+  }
+
+  @Override
+  public List<User> getFriends(long userId) {
+    return getUserById(userId).getFriends().keySet().stream().map(this::getUserById).toList();
+  }
+
+  @Override
+  public List<User> getCommonFriends(long userId, long otherId) {
+    return getUserById(userId).getFriends().keySet().stream()
+        .filter(id -> getUserById(otherId).isFriendExist(id))
+        .map(this::getUserById)
+        .toList();
+  }
+
+  @Override
+  public void clear() {
+    clearMap();
   }
 
   private Long generateId() {

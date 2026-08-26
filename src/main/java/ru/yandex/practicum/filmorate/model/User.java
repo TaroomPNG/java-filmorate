@@ -1,13 +1,11 @@
 package ru.yandex.practicum.filmorate.model;
 
 import java.time.LocalDate;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import ru.yandex.practicum.filmorate.model.dto.userDto.UserResponse;
 
 @Data
 @EqualsAndHashCode(of = {"email"})
@@ -18,31 +16,41 @@ public class User {
   private String login;
   private LocalDate birthday;
   private String name;
-  private final Set<User> friendSet = new LinkedHashSet<>();
+  private final HashMap<Long, FriendStatus> friends = new HashMap<>();
 
-  public void addFriend(User user) {
-    friendSet.add(user);
+  public void setFriendStatus(Long friendId, FriendStatus friendStatus) {
+    friends.put(friendId, friendStatus);
   }
 
-  public void deleteFriend(User user) {
-    friendSet.remove(user);
+  public void deleteFriend(Long friendId) {
+    friends.remove(friendId);
   }
 
-  public boolean isFriendExist(User user) {
-    return friendSet.contains(user);
+  public boolean isFriendExist(Long friendId) {
+    return friends.containsKey(friendId);
   }
 
-  public Set<UserResponse> getUserFriendResponse() {
-    return this.friendSet.stream()
-        .map(
-            friend ->
-                UserResponse.builder()
-                    .id(friend.getId())
-                    .email(friend.getEmail())
-                    .login(friend.getLogin())
-                    .name(friend.getName())
-                    .birthday(friend.getBirthday())
-                    .build())
+  public FriendStatus getFriendStatus(Long friendId) {
+    return friends.get(friendId);
+  }
+
+  public boolean isFriendUnconfirmed(Long friendId) {
+    return friends.entrySet().stream()
+        .filter(entry -> Objects.equals(entry.getKey(), friendId))
+        .anyMatch(entry -> entry.getValue().equals(FriendStatus.UNCONFIRMED));
+  }
+
+  public Set<Long> getAllConfirmedFriendsId() {
+    return this.friends.entrySet().stream()
+        .filter(entry -> entry.getValue().equals(FriendStatus.CONFIRMED))
+        .map(Map.Entry::getKey)
+        .collect(Collectors.toSet());
+  }
+
+  public Set<Long> getAllUnconfirmedFriendsId() {
+    return this.friends.entrySet().stream()
+        .filter(entry -> entry.getValue().equals(FriendStatus.UNCONFIRMED))
+        .map(Map.Entry::getKey)
         .collect(Collectors.toSet());
   }
 }
