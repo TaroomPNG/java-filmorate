@@ -19,7 +19,7 @@ public class UserResponse {
   private String login;
   private String name;
   private LocalDate birthday;
-  @Builder.Default private final Set<UserResponse> friendSet = new LinkedHashSet<>();
+  @Builder.Default private final Set<Long> friendIdSet = new LinkedHashSet<>();
 
   public UserResponse(User user) {
     this.id = user.getId();
@@ -27,6 +27,6 @@ public class UserResponse {
     this.login = user.getLogin();
     this.name = user.getName();
     this.birthday = user.getBirthday();
-    this.friendSet = user.getUserFriendResponse();
+    this.friendIdSet = user.getAllConfirmedFriendsId();
   }
 }

@@ -3,8 +3,6 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import java.util.Collection;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.controller.service.UserService;
@@ -17,7 +15,7 @@ import ru.yandex.practicum.filmorate.model.dto.userDto.UserResponse;
 @AllArgsConstructor
 public class UserController {
 
-  @Autowired @Getter private final UserService userService;
+  private final UserService userService;
 
   @GetMapping
   @ResponseStatus(HttpStatus.OK)
@@ -49,6 +47,12 @@ public class UserController {
   @ResponseStatus(HttpStatus.OK)
   public Collection<UserResponse> getAllUserFriends(@PathVariable Long id) {
     return userService.getAllFriends(id);
+  }
+
+  @GetMapping("/{id}/friends/requests")
+  @ResponseStatus(HttpStatus.OK)
+  public Collection<UserResponse> getAllUserFriendsRequests(@PathVariable Long id) {
+    return userService.getAllFriendsRequest(id);
   }
 
   @GetMapping("/{id}/friends/common/{otherId}")

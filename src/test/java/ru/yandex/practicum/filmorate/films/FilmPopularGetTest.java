@@ -1,130 +1,54 @@
 package ru.yandex.practicum.filmorate.films;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.LocalDate;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import java.util.List;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.ResultActions;
-import ru.yandex.practicum.filmorate.controller.service.FilmService;
-import ru.yandex.practicum.filmorate.controller.service.UserService;
-import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmPostRequest;
-import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmResponse;
-import ru.yandex.practicum.filmorate.model.dto.userDto.UserPostRequest;
-import ru.yandex.practicum.filmorate.model.dto.userDto.UserResponse;
+import ru.yandex.practicum.filmorate.DaoTest;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-public class FilmPopularGetTest {
+class FilmPopularGetTest extends DaoTest {
 
-  private final LocalDate date = LocalDate.of(2000, 12, 12);
+  @Test
+  void getPopularFilmsOrderedByLikesDescending() {
+    User userOne = addUser("test@yandex.ru", "TEST");
+    User userTwo = addUser("test2@yandex.ru", "TEST2");
+    Film twoLikes = addFilm("FILM_TWO_LIKES");
+    Film oneLike = addFilm("FILM_ONE_LIKE");
+    Film noLikes = addFilm("FILM_NO_LIKES");
 
-  private FilmResponse filmOneLike;
-  private FilmResponse filmTwoLikes;
-  private FilmResponse filmNoLikes;
+    filmStorage.addLike(twoLikes.getId(), userOne.getId());
+    filmStorage.addLike(twoLikes.getId(), userTwo.getId());
+    filmStorage.addLike(oneLike.getId(), userOne.getId());
 
-  @Autowired private MockMvc mockMvc;
-  @Autowired private ObjectMapper objectMapper;
-  @Autowired private FilmService filmService;
-  @Autowired private UserService userService;
+    List<Film> popular = filmStorage.getPopular(10);
 
-  private ResultActions performPostFilm(FilmPostRequest request) throws Exception {
-    return mockMvc.perform(
-        post("/films")
-            .contentType(MediaType.APPLICATION_JSON)
-            .accept(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)));
-  }
-
-  private ResultActions performPostUser(UserPostRequest request) throws Exception {
-    return mockMvc.perform(
-        post("/users")
-            .contentType(MediaType.APPLICATION_JSON)
-            .accept(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)));
-  }
-
-  private ResultActions performLikeFilm(Long filmId, Long userId) throws Exception {
-    return mockMvc.perform(
-        put("/films/{id}/like/{userId}", filmId, userId).accept(MediaType.APPLICATION_JSON));
-  }
-
-  private ResultActions performGetPopular(Integer count) throws Exception {
-    String url = count == null ? "/films/popular" : "/films/popular?count=" + count;
-    return mockMvc.perform(get(url).accept(MediaType.APPLICATION_JSON));
-  }
-
-  private FilmResponse createFilm(String name) throws Exception {
-    MvcResult result =
-        performPostFilm(
-                FilmPostRequest.builder().name(name).releaseDate(date).duration(120).build())
-            .andReturn();
-    return objectMapper.readValue(result.getResponse().getContentAsString(), FilmResponse.class);
-  }
-
-  private UserResponse createUser(String email, String login) throws Exception {
-    MvcResult result =
-        performPostUser(
-                UserPostRequest.builder()
-                    .email(email)
-                    .login(login)
-                    .birthday(date)
-                    .name(login)
-                    .build())
-            .andReturn();
-    return objectMapper.readValue(result.getResponse().getContentAsString(), UserResponse.class);
-  }
-
-  @BeforeEach
-  void setUp() throws Exception {
-    filmTwoLikes = createFilm("FILM_TWO_LIKES");
-    filmOneLike = createFilm("FILM_ONE_LIKE");
-    filmNoLikes = createFilm("FILM_NO_LIKES");
-
-    UserResponse userOne = createUser("test@yandex.ru", "TEST");
-    UserResponse userTwo = createUser("test2@yandex.ru", "TEST2");
-
-    performLikeFilm(filmTwoLikes.getId(), userOne.getId()).andExpect(status().isOk());
-    performLikeFilm(filmTwoLikes.getId(), userTwo.getId()).andExpect(status().isOk());
-    performLikeFilm(filmOneLike.getId(), userOne.getId()).andExpect(status().isOk());
-  }
-
-  @AfterEach
-  void cleanUp() {
-    filmService.clearMap();
-    userService.clearMap();
+    assertThat(popular)
+        .extracting(Film::getId)
+        .containsExactly(twoLikes.getId(), oneLike.getId(), noLikes.getId());
   }
 
   @Test
-  void getPopularFilmsOrderedByLikesDescending() throws Exception {
-    performGetPopular(null)
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(3))
-        .andExpect(jsonPath("$[0].id").value(filmTwoLikes.getId()))
-        .andExpect(jsonPath("$[1].id").value(filmOneLike.getId()))
-        .andExpect(jsonPath("$[2].id").value(filmNoLikes.getId()));
+  void getPopularFilmsWithCountLimit() {
+    User userOne = addUser("test@yandex.ru", "TEST");
+    User userTwo = addUser("test2@yandex.ru", "TEST2");
+    Film twoLikes = addFilm("FILM_TWO_LIKES");
+    addFilm("FILM_ONE_LIKE");
+    addFilm("FILM_NO_LIKES");
+
+    filmStorage.addLike(twoLikes.getId(), userOne.getId());
+    filmStorage.addLike(twoLikes.getId(), userTwo.getId());
+
+    assertThat(filmStorage.getPopular(1)).extracting(Film::getId).containsExactly(twoLikes.getId());
   }
 
   @Test
-  void getPopularFilmsWithCountLimit() throws Exception {
-    performGetPopular(1)
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(1))
-        .andExpect(jsonPath("$[0].id").value(filmTwoLikes.getId()));
-  }
+  void getPopularFilmsWithCountLargerThanAvailable() {
+    addFilm("FILM1");
+    addFilm("FILM2");
+    addFilm("FILM3");
 
-  @Test
-  void getPopularFilmsWithCountLargerThanAvailable() throws Exception {
-    performGetPopular(50).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(3));
+    assertThat(filmStorage.getPopular(50)).hasSize(3);
   }
 }

@@ -1,7 +1,10 @@
 package ru.yandex.practicum.filmorate.model.dto.userDto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Pattern;
 import java.time.LocalDate;
 import lombok.Builder;
 import lombok.Data;
@@ -17,7 +20,7 @@ public class UserPutRequest {
   @Builder.Default
   private String email = null;
 
-  @Pattern(regexp = "^[a-zA-Z0-9а-яА-Я_-]{4,15}$", message = "Некорректный login")
+  @Pattern(regexp = "\\S+", message = "Login не должен содержать пробелы")
   @Builder.Default
   private String login = null;
 
@@ -26,7 +29,5 @@ public class UserPutRequest {
   @Builder.Default
   private LocalDate birthday = null;
 
-  @Pattern(regexp = "^[a-zA-Z0-9а-яА-Я _\\-\\.]{1,25}$", message = "Некорректное имя")
-  @Builder.Default
-  private String name = null;
+  @Builder.Default private String name = null;
 }

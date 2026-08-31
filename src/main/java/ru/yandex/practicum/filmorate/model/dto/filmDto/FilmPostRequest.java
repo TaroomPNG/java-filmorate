@@ -1,31 +1,41 @@
 package ru.yandex.practicum.filmorate.model.dto.filmDto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PastOrPresent;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import lombok.Builder;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Rating;
 
 @Data
 @Builder
 public class FilmPostRequest {
-  @NotNull(message = "Имя фильма обязательно")
-  @Pattern(regexp = "^[a-zA-Z0-9а-яА-Я_-]{1,200}$", message = "Некорректное название фильма")
+  @NotBlank(message = "Имя фильма обязательно")
   private String name;
 
-  @Pattern(regexp = "^[a-zA-Z0-9а-яА-Я _-]{1,200}$", message = "Некорректное описание фильма")
+  @Size(max = 200, message = "Описание не может быть длиннее 200 символов")
   @Builder.Default
-  private String description = null;
+  private String description = "-";
 
   @NotNull(message = "Дата обязательна")
-  @PastOrPresent(message = "Дата релиза не может быть в будущем")
   @JsonFormat(pattern = "yyyy-MM-dd")
   private LocalDate releaseDate;
 
   @NotNull(message = "Длительность обязательна")
   @Positive(message = "Длительность должна быть положительным числом")
   private Integer duration;
+
+  @JsonDeserialize(as = LinkedHashSet.class)
+  @Builder.Default
+  private Set<Genre> genres = new LinkedHashSet<>();
+
+  @NotNull(message = "Рейтинг обязателен")
+  private Rating mpa;
 }

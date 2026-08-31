@@ -1,104 +1,63 @@
 package ru.yandex.practicum.filmorate.users;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.LocalDate;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import java.util.List;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.ResultActions;
-import ru.yandex.practicum.filmorate.controller.service.UserService;
-import ru.yandex.practicum.filmorate.model.dto.userDto.UserPostRequest;
-import ru.yandex.practicum.filmorate.model.dto.userDto.UserResponse;
+import ru.yandex.practicum.filmorate.DaoTest;
+import ru.yandex.practicum.filmorate.controller.exceptions.UserNotFound;
+import ru.yandex.practicum.filmorate.model.User;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-public class UserGetTest {
+class UserGetTest extends DaoTest {
 
-  @Autowired private MockMvc mockMvc;
-  @Autowired private ObjectMapper objectMapper;
-  @Autowired private UserService userService;
+  @Test
+  void getOneUser() {
+    User created = addUser("test@yandex.ru", "TEST");
 
-  private UserResponse userPostResponse;
-  private LocalDate date;
+    List<User> users = userStorage.getUsers();
 
-  private ResultActions performPostUser(UserPostRequest request) throws Exception {
-    return mockMvc.perform(
-        post("/users")
-            .contentType(MediaType.APPLICATION_JSON)
-            .accept(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request)));
-  }
-
-  private ResultActions performGetUser() throws Exception {
-    return mockMvc.perform(get("/users").accept(MediaType.APPLICATION_JSON));
-  }
-
-  @BeforeEach
-  void setUp() throws Exception {
-    date = LocalDate.of(2000, 12, 12);
-
-    MvcResult result =
-        performPostUser(
-                UserPostRequest.builder()
-                    .email("test@yandex.ru")
-                    .login("TEST")
-                    .birthday(date)
-                    .name("TEST")
-                    .build())
-            .andReturn();
-
-    userPostResponse =
-        objectMapper.readValue(result.getResponse().getContentAsString(), UserResponse.class);
-  }
-
-  @AfterEach
-  void cleanUp() {
-    userService.clearMap();
+    assertThat(users).hasSize(1);
+    assertThat(users.getFirst())
+        .hasFieldOrPropertyWithValue("id", created.getId())
+        .hasFieldOrPropertyWithValue("login", "TEST")
+        .hasFieldOrPropertyWithValue("name", "TEST")
+        .hasFieldOrPropertyWithValue("birthday", DATE);
   }
 
   @Test
-  void getOneUser() throws Exception {
-    performGetUser()
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$[0].id").value(userPostResponse.getId()))
-        .andExpect(jsonPath("$[0].login").value("TEST"))
-        .andExpect(jsonPath("$[0].birthday").value(date.toString()))
-        .andExpect(jsonPath("$[0].name").value("TEST"));
+  void getManyUsers() {
+    addUser("test@yandex.ru", "TEST");
+    addUser("test1@yandex.ru", "TEST1");
+    addUser("test2@yandex.ru", "TEST2");
+
+    List<User> users = userStorage.getUsers();
+
+    assertThat(users).extracting(User::getId).containsExactly(1L, 2L, 3L);
   }
 
   @Test
-  void getManyUsers() throws Exception {
-    performPostUser(
-        UserPostRequest.builder()
-            .email("test1@yandex.ru")
-            .login("TEST1")
-            .birthday(date)
-            .name("TEST1")
-            .build());
+  void getUserById() {
+    User created = addUser("test@yandex.ru", "TEST");
 
-    performPostUser(
-        UserPostRequest.builder()
-            .email("test2@yandex.ru")
-            .login("TEST2")
-            .birthday(date)
-            .name("TEST2")
-            .build());
+    User user = userStorage.getUserById(created.getId());
 
-    performGetUser()
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(3))
-        .andExpect(jsonPath("$[0].id").value(1))
-        .andExpect(jsonPath("$[1].id").value(2))
-        .andExpect(jsonPath("$[2].id").value(3));
+    assertThat(user)
+        .hasFieldOrPropertyWithValue("id", created.getId())
+        .hasFieldOrPropertyWithValue("login", "TEST")
+        .hasFieldOrPropertyWithValue("email", "test@yandex.ru");
+  }
+
+  @Test
+  void getUserByIdNotFound() {
+    assertThatThrownBy(() -> userStorage.getUserById(9999L)).isInstanceOf(UserNotFound.class);
+  }
+
+  @Test
+  void isUserExists() {
+    User created = addUser("exists@yandex.ru", "EXISTS");
+
+    assertThat(userStorage.isUserExists(created.getId())).isTrue();
+    assertThat(userStorage.isUserExists(9999L)).isFalse();
   }
 }
