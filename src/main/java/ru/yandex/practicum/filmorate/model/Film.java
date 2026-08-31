@@ -8,7 +8,7 @@ import lombok.*;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserResponse;
 
 @Data
-@EqualsAndHashCode(of = {"id"})
+@EqualsAndHashCode(of = {"id", "name"})
 @AllArgsConstructor
 public class Film {
   private Long id;
