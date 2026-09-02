@@ -91,13 +91,13 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
 
   @Override
   @Transactional
-  public boolean deleteReview(long id) {
+  public boolean deleteReview(Long id) {
     jdbc.update(DELETE_REVIEW_REACTIONS, id);
     return delete(DELETE_REVIEW, id);
   }
 
   @Override
-  public Review getReviewById(long id) {
+  public Review getReviewById(Long id) {
     Optional<Review> optionalReview = findOne(FIND_REVIEW_BY_ID, id);
     if (optionalReview.isEmpty()) {
       throw new ReviewNotFound(id);
@@ -114,13 +114,13 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
   }
 
   @Override
-  public boolean isReviewExists(long id) {
+  public boolean isReviewExists(Long id) {
     return findOne(FIND_REVIEW_BY_ID, id).isPresent();
   }
 
   @Override
   @Transactional
-  public Review addLike(long reviewId, long userId) {
+  public Review addLike(Long reviewId, Long userId) {
     jdbc.update(ADD_OR_UPDATE_REACTION, reviewId, userId, true);
     recalculateUseful(reviewId);
     return getReviewById(reviewId);
@@ -128,7 +128,7 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
 
   @Override
   @Transactional
-  public Review addDislike(long reviewId, long userId) {
+  public Review addDislike(Long reviewId, Long userId) {
     jdbc.update(ADD_OR_UPDATE_REACTION, reviewId, userId, false);
     recalculateUseful(reviewId);
     return getReviewById(reviewId);
@@ -136,7 +136,7 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
 
   @Override
   @Transactional
-  public Review removeLike(long reviewId, long userId) {
+  public Review removeLike(Long reviewId, Long userId) {
     jdbc.update(DELETE_LIKE, reviewId, userId);
     recalculateUseful(reviewId);
     return getReviewById(reviewId);
@@ -144,13 +144,13 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
 
   @Override
   @Transactional
-  public Review removeDislike(long reviewId, long userId) {
+  public Review removeDislike(Long reviewId, Long userId) {
     jdbc.update(DELETE_DISLIKE, reviewId, userId);
     recalculateUseful(reviewId);
     return getReviewById(reviewId);
   }
 
-  private void recalculateUseful(long reviewId) {
+  private void recalculateUseful(Long reviewId) {
     update(RECALCULATE_USEFUL, reviewId, reviewId);
   }
 }

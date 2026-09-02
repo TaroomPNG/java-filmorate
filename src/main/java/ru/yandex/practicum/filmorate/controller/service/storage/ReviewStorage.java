@@ -10,19 +10,19 @@ public interface ReviewStorage {
 
   Review updateReview(ReviewPutRequest reviewPutRequest);
 
-  boolean deleteReview(long id);
+  boolean deleteReview(Long id);
 
-  Review getReviewById(long id);
+  Review getReviewById(Long id);
 
   List<Review> getReviews(Long filmId, int count);
 
-  boolean isReviewExists(long id);
+  boolean isReviewExists(Long id);
 
-  Review addLike(long reviewId, long userId);
+  Review addLike(Long reviewId, Long userId);
 
-  Review addDislike(long reviewId, long userId);
+  Review addDislike(Long reviewId, Long userId);
 
-  Review removeLike(long reviewId, long userId);
+  Review removeLike(Long reviewId, Long userId);
 
-  Review removeDislike(long reviewId, long userId);
+  Review removeDislike(Long reviewId, Long userId);
 }
