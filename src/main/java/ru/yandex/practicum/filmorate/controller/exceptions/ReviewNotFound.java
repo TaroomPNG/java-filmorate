@@ -6,6 +6,6 @@ public class ReviewNotFound extends RuntimeException {
   }
 
   public ReviewNotFound(Long id) {
-    super(String.format("По ID %d review не найден", id));
+    super(String.format("По ID %s review не найден", id));
   }
 }
