@@ -1,7 +1,8 @@
 package ru.yandex.practicum.filmorate.controller.handler;
 
-import jakarta.validation.ConstraintViolationException;
 import java.util.stream.Collectors;
+
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -9,12 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import ru.yandex.practicum.filmorate.controller.exceptions.ConditionsNotMetException;
-import ru.yandex.practicum.filmorate.controller.exceptions.DuplicationExceptions;
-import ru.yandex.practicum.filmorate.controller.exceptions.FilmNotFound;
-import ru.yandex.practicum.filmorate.controller.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.controller.exceptions.ReviewNotFound;
-import ru.yandex.practicum.filmorate.controller.exceptions.UserNotFound;
+import ru.yandex.practicum.filmorate.controller.exceptions.*;
 
 @ControllerAdvice
 @Slf4j
@@ -38,6 +34,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler({
     UserNotFound.class,
+    FeedNotFound.class,
     FilmNotFound.class,
     ReviewNotFound.class,
     NotFoundException.class
@@ -75,9 +72,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException ex) {
     String message =
         ex.getConstraintViolations().stream()
-            .map(
-                violation ->
-                    violation.getPropertyPath() + ": " + violation.getMessage())
+            .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
             .collect(Collectors.joining("; "));
     ErrorResponse response = new ErrorResponse(message);
 
