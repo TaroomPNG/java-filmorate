@@ -34,6 +34,9 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
           + "ORDER BY COUNT(fl.user_id) DESC, f.film_id LIMIT ?";
   private static final String DELETE_FILM_GENRES = "DELETE FROM film_to_genres WHERE film_id = ?";
   private static final String DELETE_FILM_LIKES = "DELETE FROM film_likes WHERE film_id = ?";
+  private static final String DELETE_REVIEW_REACTIONS_BY_FILM =
+      "DELETE FROM review_reaction WHERE review_id IN (SELECT review_id FROM review WHERE film_id = ?)";
+  private static final String DELETE_REVIEWS_BY_FILM = "DELETE FROM review WHERE film_id = ?";
   private static final String DELETE_BY_ID_FILM = "DELETE FROM film WHERE film_id = ?";
   private static final String ADD_NEW_FILM =
       "INSERT INTO film (name, description, release_date, duration, rating_id) "
@@ -144,6 +147,8 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
   public boolean deleteFilm(long id) {
     jdbc.update(DELETE_FILM_GENRES, id);
     jdbc.update(DELETE_FILM_LIKES, id);
+    jdbc.update(DELETE_REVIEW_REACTIONS_BY_FILM, id);
+    jdbc.update(DELETE_REVIEWS_BY_FILM, id);
     return delete(DELETE_BY_ID_FILM, id);
   }
 
@@ -243,6 +248,8 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
   @Override
   public void clear() {
+    jdbc.update("DELETE FROM review_reaction");
+    jdbc.update("DELETE FROM review");
     jdbc.update("DELETE FROM film_likes");
     jdbc.update("DELETE FROM film_to_genres");
     jdbc.update("DELETE FROM film");
