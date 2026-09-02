@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller.handler;
 
+import jakarta.validation.ConstraintViolationException;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
@@ -63,6 +64,20 @@ public class GlobalExceptionHandler {
     String message =
         ex.getBindingResult().getFieldErrors().stream()
             .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
+            .collect(Collectors.joining("; "));
+    ErrorResponse response = new ErrorResponse(message);
+
+    log.error(response.toString());
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+  }
+
+  @ExceptionHandler(ConstraintViolationException.class)
+  public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException ex) {
+    String message =
+        ex.getConstraintViolations().stream()
+            .map(
+                violation ->
+                    violation.getPropertyPath() + ": " + violation.getMessage())
             .collect(Collectors.joining("; "));
     ErrorResponse response = new ErrorResponse(message);
 

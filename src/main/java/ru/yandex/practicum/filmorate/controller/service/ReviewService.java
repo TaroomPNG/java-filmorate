@@ -1,11 +1,13 @@
 package ru.yandex.practicum.filmorate.controller.service;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
-import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.controller.exceptions.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.controller.exceptions.FilmNotFound;
 import ru.yandex.practicum.filmorate.controller.exceptions.ReviewNotFound;
@@ -19,6 +21,7 @@ import ru.yandex.practicum.filmorate.model.dto.reviewDto.ReviewResponse;
 
 @Slf4j
 @Service
+@Validated
 public class ReviewService {
 
   @Autowired
@@ -33,7 +36,7 @@ public class ReviewService {
   @Qualifier("FilmDbStorage")
   private FilmStorage filmStorage;
 
-  public ReviewResponse addReview(ReviewPostRequest reviewPostRequest) {
+  public ReviewResponse addReview(@Valid @NotNull ReviewPostRequest reviewPostRequest) {
     log.trace("Вызывается addReview");
     validateReviewContent(reviewPostRequest.getContent());
     validateUser(reviewPostRequest.getUserId());
@@ -41,7 +44,7 @@ public class ReviewService {
     return new ReviewResponse(reviewStorage.addReview(reviewPostRequest));
   }
 
-  public ReviewResponse updateReview(ReviewPutRequest reviewPutRequest) {
+  public ReviewResponse updateReview(@Valid @NotNull ReviewPutRequest reviewPutRequest) {
     log.trace("Вызывается updateReview: ReviewID {}", reviewPutRequest.getReviewId());
     validateReviewExists(reviewPutRequest.getReviewId());
     if (reviewPutRequest.getContent() != null) {
@@ -56,15 +59,13 @@ public class ReviewService {
     return new ReviewResponse(reviewStorage.updateReview(reviewPutRequest));
   }
 
-  public boolean deleteReview(Long reviewId) {
-    requireNotNullId(reviewId, "ID отзыва обязателен");
+  public boolean deleteReview(@NotNull Long reviewId) {
     log.trace("Вызывается deleteReview: ReviewID {}", reviewId);
     validateReviewExists(reviewId);
     return reviewStorage.deleteReview(reviewId);
   }
 
-  public ReviewResponse getReviewById(Long reviewId) {
-    requireNotNullId(reviewId, "ID отзыва обязателен");
+  public ReviewResponse getReviewById(@NotNull Long reviewId) {
     log.trace("Вызывается getReviewById: ReviewID {}", reviewId);
     return new ReviewResponse(reviewStorage.getReviewById(reviewId));
   }
@@ -77,36 +78,28 @@ public class ReviewService {
     return reviewStorage.getReviews(filmId, count).stream().map(ReviewResponse::new).toList();
   }
 
-  public ReviewResponse addLike(Long reviewId, Long userId) {
-    requireNotNullId(reviewId, "ID отзыва обязателен");
-    requireNotNullId(userId, "ID пользователя обязателен");
+  public ReviewResponse addLike(@NotNull Long reviewId, @NotNull Long userId) {
     log.trace("Вызывается addLikeToReview: ReviewID {} - UserID {}", reviewId, userId);
     validateReviewExists(reviewId);
     validateUser(userId);
     return new ReviewResponse(reviewStorage.addLike(reviewId, userId));
   }
 
-  public ReviewResponse addDislike(Long reviewId, Long userId) {
-    requireNotNullId(reviewId, "ID отзыва обязателен");
-    requireNotNullId(userId, "ID пользователя обязателен");
+  public ReviewResponse addDislike(@NotNull Long reviewId, @NotNull Long userId) {
     log.trace("Вызывается addDislikeToReview: ReviewID {} - UserID {}", reviewId, userId);
     validateReviewExists(reviewId);
     validateUser(userId);
     return new ReviewResponse(reviewStorage.addDislike(reviewId, userId));
   }
 
-  public ReviewResponse removeLike(Long reviewId, Long userId) {
-    requireNotNullId(reviewId, "ID отзыва обязателен");
-    requireNotNullId(userId, "ID пользователя обязателен");
+  public ReviewResponse removeLike(@NotNull Long reviewId, @NotNull Long userId) {
     log.trace("Вызывается removeLikeFromReview: ReviewID {} - UserID {}", reviewId, userId);
     validateReviewExists(reviewId);
     validateUser(userId);
     return new ReviewResponse(reviewStorage.removeLike(reviewId, userId));
   }
 
-  public ReviewResponse removeDislike(Long reviewId, Long userId) {
-    requireNotNullId(reviewId, "ID отзыва обязателен");
-    requireNotNullId(userId, "ID пользователя обязателен");
+  public ReviewResponse removeDislike(@NotNull Long reviewId, @NotNull Long userId) {
     log.trace("Вызывается removeDislikeFromReview: ReviewID {} - UserID {}", reviewId, userId);
     validateReviewExists(reviewId);
     validateUser(userId);
@@ -120,27 +113,20 @@ public class ReviewService {
   }
 
   private void validateReviewExists(Long reviewId) {
-    requireNotNullId(reviewId, "ID отзыва обязателен");
     if (!reviewStorage.isReviewExists(reviewId)) {
       throw new ReviewNotFound(reviewId);
     }
   }
 
   private void validateUser(Long userId) {
-    requireNotNullId(userId, "ID пользователя обязателен");
     if (!userStorage.isUserExists(userId)) {
       throw new UserNotFound(userId);
     }
   }
 
   private void validateFilm(Long filmId) {
-    requireNotNullId(filmId, "ID фильма обязателен");
     if (!filmStorage.isFilmExists(filmId)) {
       throw new FilmNotFound(filmId);
     }
-  }
-
-  private void requireNotNullId(Long id, String message) {
-    Objects.requireNonNull(id, message);
   }
 }

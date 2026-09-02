@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import java.util.Collection;
 import lombok.RequiredArgsConstructor;
@@ -33,13 +34,13 @@ public class ReviewsController {
 
   @DeleteMapping("/{id}")
   @ResponseStatus(HttpStatus.OK)
-  public boolean deleteReview(@PathVariable Long id) {
+  public boolean deleteReview(@PathVariable @NotNull Long id) {
     return reviewService.deleteReview(id);
   }
 
   @GetMapping("/{id}")
   @ResponseStatus(HttpStatus.OK)
-  public ReviewResponse getReviewById(@PathVariable Long id) {
+  public ReviewResponse getReviewById(@PathVariable @NotNull Long id) {
     return reviewService.getReviewById(id);
   }
 
@@ -53,25 +54,29 @@ public class ReviewsController {
 
   @PutMapping("/{id}/like/{userId}")
   @ResponseStatus(HttpStatus.OK)
-  public ReviewResponse addLike(@PathVariable Long id, @PathVariable Long userId) {
+  public ReviewResponse addLike(
+      @PathVariable @NotNull Long id, @PathVariable @NotNull Long userId) {
     return reviewService.addLike(id, userId);
   }
 
   @PutMapping("/{id}/dislike/{userId}")
   @ResponseStatus(HttpStatus.OK)
-  public ReviewResponse addDislike(@PathVariable Long id, @PathVariable Long userId) {
+  public ReviewResponse addDislike(
+      @PathVariable @NotNull Long id, @PathVariable @NotNull Long userId) {
     return reviewService.addDislike(id, userId);
   }
 
   @DeleteMapping("/{id}/like/{userId}")
   @ResponseStatus(HttpStatus.OK)
-  public ReviewResponse removeLike(@PathVariable Long id, @PathVariable Long userId) {
+  public ReviewResponse removeLike(
+      @PathVariable @NotNull Long id, @PathVariable @NotNull Long userId) {
     return reviewService.removeLike(id, userId);
   }
 
   @DeleteMapping("/{id}/dislike/{userId}")
   @ResponseStatus(HttpStatus.OK)
-  public ReviewResponse removeDislike(@PathVariable Long id, @PathVariable Long userId) {
+  public ReviewResponse removeDislike(
+      @PathVariable @NotNull Long id, @PathVariable @NotNull Long userId) {
     return reviewService.removeDislike(id, userId);
   }
 }
