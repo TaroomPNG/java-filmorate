@@ -67,4 +67,10 @@ public class FeedDbStorage extends BaseRepository<Feed> implements FeedStorage {
     Integer count = jdbc.queryForObject(EXISTS_BY_USER, Integer.class, id);
     return count != null && count > 0;
   }
+
+  @Override
+  public void clear() {
+    jdbc.update("DELETE FROM feed");
+    jdbc.update("ALTER TABLE feed ALTER COLUMN event_id RESTART WITH 1");
+  }
 }

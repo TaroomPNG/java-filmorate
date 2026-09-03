@@ -13,4 +13,6 @@ public interface FeedStorage {
   List<Feed> getFeedByUserViaType(Long userId, EventType type);
 
   boolean isFeedExistByUser(Long id);
+
+  void clear();
 }
