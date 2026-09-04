@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controller.exceptions.UserNotFound;
+import ru.yandex.practicum.filmorate.controller.service.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.UserStorage;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserPutRequest;
@@ -19,6 +20,10 @@ public class UserService {
   @Autowired
   @Qualifier("UserDbStorage")
   UserStorage userStorage;
+
+  @Autowired
+  @Qualifier("ReviewDbStorage")
+  ReviewStorage reviewStorage;
 
   public UserResponse addFriend(Long userId, Long friendId) {
     log.trace("Вызывается addFriend: UserID {} - FriendID {}", userId, friendId);
@@ -85,5 +90,11 @@ public class UserService {
   public UserResponse updateUser(UserPutRequest userPutRequest) {
     log.trace("Запрос UserResponse через updateUser");
     return new UserResponse(userStorage.updateUser(userPutRequest));
+  }
+
+  public boolean deleteUser(Long id) {
+    log.trace("Запрос UserResponse через deleteUser");
+    reviewStorage.deleteByUserId(id);
+    return userStorage.deleteUser(id);
   }
 }
