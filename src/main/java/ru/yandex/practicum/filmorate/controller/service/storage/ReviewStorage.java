@@ -25,4 +25,10 @@ public interface ReviewStorage {
   Review removeLike(Long reviewId, Long userId);
 
   Review removeDislike(Long reviewId, Long userId);
+
+  void deleteByUserId(Long userId);
+
+  void deleteByFilmId(Long filmId);
+
+  void clear();
 }

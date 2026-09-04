@@ -21,11 +21,6 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
   private static final String DELETE_FRIENDSHIPS =
       "DELETE FROM user_friendship WHERE user_id = ? OR friend_id = ?";
   private static final String DELETE_LIKES = "DELETE FROM film_likes WHERE user_id = ?";
-  private static final String DELETE_REVIEW_REACTIONS_BY_USER =
-      "DELETE FROM review_reaction WHERE user_id = ?";
-  private static final String DELETE_REVIEW_REACTIONS_ON_USER_REVIEWS =
-      "DELETE FROM review_reaction WHERE review_id IN (SELECT review_id FROM review WHERE user_id = ?)";
-  private static final String DELETE_REVIEWS_BY_USER = "DELETE FROM review WHERE user_id = ?";
   private static final String DELETE_BY_ID_USER = "DELETE FROM \"user\" WHERE user_id = ?";
   private static final String ADD_NEW_USER =
       "INSERT INTO \"user\" (email, login, birthday, name) VALUES (?, ?, ?, ?)";
@@ -108,9 +103,6 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
   public boolean deleteUser(long id) {
     jdbc.update(DELETE_FRIENDSHIPS, id, id);
     jdbc.update(DELETE_LIKES, id);
-    jdbc.update(DELETE_REVIEW_REACTIONS_BY_USER, id);
-    jdbc.update(DELETE_REVIEW_REACTIONS_ON_USER_REVIEWS, id);
-    jdbc.update(DELETE_REVIEWS_BY_USER, id);
     return delete(DELETE_BY_ID_USER, id);
   }
 
@@ -166,8 +158,6 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
   @Override
   public void clear() {
     jdbc.update("DELETE FROM user_friendship");
-    jdbc.update("DELETE FROM review_reaction");
-    jdbc.update("DELETE FROM review");
     jdbc.update("DELETE FROM film_likes");
     jdbc.update("DELETE FROM \"user\"");
     jdbc.update("ALTER TABLE \"user\" ALTER COLUMN user_id RESTART WITH 1");

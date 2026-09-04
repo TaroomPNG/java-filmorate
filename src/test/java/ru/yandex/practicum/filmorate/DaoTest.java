@@ -47,6 +47,7 @@ public abstract class DaoTest {
 
   @BeforeEach
   void resetData() {
+    reviewStorage.clear();
     filmStorage.clear();
     userStorage.clear();
   }

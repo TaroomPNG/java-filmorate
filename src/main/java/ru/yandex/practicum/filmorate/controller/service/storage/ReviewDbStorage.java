@@ -26,6 +26,14 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
       "INSERT INTO review (content, is_positive, user_id, film_id, useful) VALUES (?, ?, ?, ?, 0)";
   private static final String DELETE_REVIEW_REACTIONS = "DELETE FROM review_reaction WHERE review_id = ?";
   private static final String DELETE_REVIEW = "DELETE FROM review WHERE review_id = ?";
+  private static final String DELETE_REVIEW_REACTIONS_BY_USER =
+      "DELETE FROM review_reaction WHERE user_id = ?";
+  private static final String DELETE_REVIEW_REACTIONS_ON_USER_REVIEWS =
+      "DELETE FROM review_reaction WHERE review_id IN (SELECT review_id FROM review WHERE user_id = ?)";
+  private static final String DELETE_REVIEWS_BY_USER = "DELETE FROM review WHERE user_id = ?";
+  private static final String DELETE_REVIEW_REACTIONS_BY_FILM =
+      "DELETE FROM review_reaction WHERE review_id IN (SELECT review_id FROM review WHERE film_id = ?)";
+  private static final String DELETE_REVIEWS_BY_FILM = "DELETE FROM review WHERE film_id = ?";
   private static final String ADD_OR_UPDATE_REACTION =
       "MERGE INTO review_reaction (review_id, user_id, is_like) KEY (review_id, user_id) VALUES (?, ?, ?)";
   private static final String DELETE_LIKE =
@@ -148,6 +156,27 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
     jdbc.update(DELETE_DISLIKE, reviewId, userId);
     recalculateUseful(reviewId);
     return getReviewById(reviewId);
+  }
+
+  @Override
+  @Transactional
+  public void deleteByUserId(Long userId) {
+    jdbc.update(DELETE_REVIEW_REACTIONS_BY_USER, userId);
+    jdbc.update(DELETE_REVIEW_REACTIONS_ON_USER_REVIEWS, userId);
+    jdbc.update(DELETE_REVIEWS_BY_USER, userId);
+  }
+
+  @Override
+  @Transactional
+  public void deleteByFilmId(Long filmId) {
+    jdbc.update(DELETE_REVIEW_REACTIONS_BY_FILM, filmId);
+    jdbc.update(DELETE_REVIEWS_BY_FILM, filmId);
+  }
+
+  @Override
+  public void clear() {
+    jdbc.update("DELETE FROM review_reaction");
+    jdbc.update("DELETE FROM review");
   }
 
   private void recalculateUseful(Long reviewId) {
