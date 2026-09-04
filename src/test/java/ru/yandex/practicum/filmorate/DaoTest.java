@@ -9,30 +9,19 @@ import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
 import ru.yandex.practicum.filmorate.controller.service.storage.FilmDbStorage;
-import ru.yandex.practicum.filmorate.controller.service.storage.ReviewDbStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.UserDbStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.mapper.FilmRowMapper;
-import ru.yandex.practicum.filmorate.controller.service.storage.mapper.ReviewRowMapper;
 import ru.yandex.practicum.filmorate.controller.service.storage.mapper.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
-import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmPostRequest;
-import ru.yandex.practicum.filmorate.model.dto.reviewDto.ReviewPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserPostRequest;
 
 @JdbcTest
 @AutoConfigureTestDatabase
-@Import({
-  UserDbStorage.class,
-  FilmDbStorage.class,
-  ReviewDbStorage.class,
-  UserRowMapper.class,
-  FilmRowMapper.class,
-  ReviewRowMapper.class
-})
+@Import({UserDbStorage.class, FilmDbStorage.class, UserRowMapper.class, FilmRowMapper.class})
 @TestPropertySource(
     properties = {
       "spring.sql.init.mode=always",
@@ -43,11 +32,9 @@ public abstract class DaoTest {
 
   @Autowired protected UserDbStorage userStorage;
   @Autowired protected FilmDbStorage filmStorage;
-  @Autowired protected ReviewDbStorage reviewStorage;
 
   @BeforeEach
   void resetData() {
-    reviewStorage.clear();
     filmStorage.clear();
     userStorage.clear();
   }
@@ -69,16 +56,6 @@ public abstract class DaoTest {
             .duration(120)
             .genres(genres)
             .mpa(mpa)
-            .build());
-  }
-
-  protected Review addReview(String content, Boolean isPositive, Long userId, Long filmId) {
-    return reviewStorage.addReview(
-        ReviewPostRequest.builder()
-            .content(content)
-            .isPositive(isPositive)
-            .userId(userId)
-            .filmId(filmId)
             .build());
   }
 }

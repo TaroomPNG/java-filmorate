@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.controller.handler;
 
-import jakarta.validation.ConstraintViolationException;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
@@ -13,7 +12,6 @@ import ru.yandex.practicum.filmorate.controller.exceptions.ConditionsNotMetExcep
 import ru.yandex.practicum.filmorate.controller.exceptions.DuplicationExceptions;
 import ru.yandex.practicum.filmorate.controller.exceptions.FilmNotFound;
 import ru.yandex.practicum.filmorate.controller.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.controller.exceptions.ReviewNotFound;
 import ru.yandex.practicum.filmorate.controller.exceptions.UserNotFound;
 
 @ControllerAdvice
@@ -36,12 +34,7 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
   }
 
-  @ExceptionHandler({
-    UserNotFound.class,
-    FilmNotFound.class,
-    ReviewNotFound.class,
-    NotFoundException.class
-  })
+  @ExceptionHandler({UserNotFound.class, FilmNotFound.class, NotFoundException.class})
   public ResponseEntity<ErrorResponse> handleUserNotFound(RuntimeException ex) {
     String message = ex.getMessage();
     ErrorResponse response = new ErrorResponse(message);
@@ -64,20 +57,6 @@ public class GlobalExceptionHandler {
     String message =
         ex.getBindingResult().getFieldErrors().stream()
             .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
-            .collect(Collectors.joining("; "));
-    ErrorResponse response = new ErrorResponse(message);
-
-    log.error(response.toString());
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-  }
-
-  @ExceptionHandler(ConstraintViolationException.class)
-  public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException ex) {
-    String message =
-        ex.getConstraintViolations().stream()
-            .map(
-                violation ->
-                    violation.getPropertyPath() + ": " + violation.getMessage())
             .collect(Collectors.joining("; "));
     ErrorResponse response = new ErrorResponse(message);
 

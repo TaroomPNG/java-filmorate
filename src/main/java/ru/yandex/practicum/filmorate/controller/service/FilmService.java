@@ -12,7 +12,6 @@ import ru.yandex.practicum.filmorate.controller.exceptions.FilmNotFound;
 import ru.yandex.practicum.filmorate.controller.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.controller.exceptions.UserNotFound;
 import ru.yandex.practicum.filmorate.controller.service.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.controller.service.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.UserStorage;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
@@ -33,10 +32,6 @@ public class FilmService {
   @Autowired
   @Qualifier("UserDbStorage")
   UserStorage userStorage;
-
-  @Autowired
-  @Qualifier("ReviewDbStorage")
-  ReviewStorage reviewStorage;
 
   public FilmResponse deleteLikeOnFilm(Long filmId, Long userId) {
     log.trace("Вызывается deleteLikeOnFilm: FilmID {} - UserID {}", filmId, userId);
@@ -101,7 +96,6 @@ public class FilmService {
 
   public boolean deleteFilm(Long id) {
     log.trace("Запрос FilmResponse через deleteFilm");
-    reviewStorage.deleteByFilmId(id);
     return filmStorage.deleteFilm(id);
   }
 
