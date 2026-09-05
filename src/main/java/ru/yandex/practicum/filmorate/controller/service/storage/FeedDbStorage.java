@@ -23,7 +23,7 @@ public class FeedDbStorage extends BaseRepository<Feed> implements FeedStorage {
       "SELECT event_id, timestamp, user_id, event_type, operation, entity_id "
           + "FROM feed WHERE user_id = ? AND event_type = ? ORDER BY timestamp ASC";
 
-  private static final String EXISTS_BY_USER = "SELECT COUNT(*) FROM feed WHERE user_id = ?";
+  private static final String EXISTS_BY_USER = "SELECT user_id FROM feed WHERE user_id = ? LIMIT 1";
 
   public FeedDbStorage(JdbcTemplate jdbc, RowMapper<Feed> mapper) {
     super(jdbc, mapper);
@@ -52,8 +52,8 @@ public class FeedDbStorage extends BaseRepository<Feed> implements FeedStorage {
 
   @Override
   public boolean isFeedExistByUser(Long id) {
-    Integer count = jdbc.queryForObject(EXISTS_BY_USER, Integer.class, id);
-    return count != null && count > 0;
+    List<Long> result = jdbc.queryForList(EXISTS_BY_USER, Long.class, id);
+    return !result.isEmpty();
   }
 
   @Override

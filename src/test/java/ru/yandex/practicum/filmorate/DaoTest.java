@@ -8,6 +8,8 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
+import ru.yandex.practicum.filmorate.controller.service.FeedService;
+import ru.yandex.practicum.filmorate.controller.service.FilmService;
 import ru.yandex.practicum.filmorate.controller.service.storage.FeedDbStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.FilmDbStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.ReviewDbStorage;
@@ -16,12 +18,12 @@ import ru.yandex.practicum.filmorate.controller.service.storage.mapper.FeedRowMa
 import ru.yandex.practicum.filmorate.controller.service.storage.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.controller.service.storage.mapper.ReviewRowMapper;
 import ru.yandex.practicum.filmorate.controller.service.storage.mapper.UserRowMapper;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.model.dto.feedDto.FeedPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.reviewDto.ReviewPostRequest;
@@ -37,6 +39,8 @@ import ru.yandex.practicum.filmorate.model.dto.userDto.UserPostRequest;
   UserRowMapper.class,
   FilmRowMapper.class,
   FeedRowMapper.class,
+  FilmService.class,
+  FeedService.class,
   ReviewRowMapper.class
 })
 @TestPropertySource(

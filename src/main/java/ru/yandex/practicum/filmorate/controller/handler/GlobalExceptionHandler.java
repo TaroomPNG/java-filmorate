@@ -1,8 +1,7 @@
 package ru.yandex.practicum.filmorate.controller.handler;
 
-import java.util.stream.Collectors;
-
 import jakarta.validation.ConstraintViolationException;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -34,7 +33,6 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler({
     UserNotFound.class,
-    FeedNotFound.class,
     FilmNotFound.class,
     ReviewNotFound.class,
     NotFoundException.class

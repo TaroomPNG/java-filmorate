@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS feed
     event_type varchar(50) NOT NULL CHECK (event_type IN ('LIKE', 'FRIEND', 'REVIEW')),
     operation  varchar(50) NOT NULL CHECK (operation IN ('REMOVE', 'ADD', 'UPDATE')),
     entity_id  bigint      NOT NULL,
-    CONSTRAINT feed_to_user FOREIGN KEY (user_id) REFERENCES "user" (user_id)
+    CONSTRAINT feed_to_user FOREIGN KEY (user_id) REFERENCES "user" (user_id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS review

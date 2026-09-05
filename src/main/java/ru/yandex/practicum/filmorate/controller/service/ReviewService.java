@@ -79,10 +79,11 @@ public class ReviewService {
     validateReviewExists(reviewId);
 
     Long userId = getReviewById(reviewId).getUserId();
+    boolean isDeleted = reviewStorage.deleteReview(reviewId);
     feedService.addToFeed(
         new FeedPostRequest(userId, EventType.REVIEW, Operation.REMOVE, reviewId));
 
-    return reviewStorage.deleteReview(reviewId);
+    return isDeleted;
   }
 
   public ReviewResponse getReviewById(@NotNull Long reviewId) {

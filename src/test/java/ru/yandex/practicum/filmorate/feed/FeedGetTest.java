@@ -4,14 +4,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import ru.yandex.practicum.filmorate.DaoTest;
+import ru.yandex.practicum.filmorate.controller.service.FeedService;
+import ru.yandex.practicum.filmorate.controller.service.FilmService;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.dto.feedDto.FeedResponse;
 
 class FeedGetTest extends DaoTest {
+
+  @Autowired protected FilmService filmService;
+  @Autowired protected FeedService feedService;
 
   @Test
   void getCorrectFeed() {
@@ -23,7 +30,7 @@ class FeedGetTest extends DaoTest {
     List<Feed> feed = feedStorage.getFeedByUser(user.getId());
 
     assertThat(feed).hasSize(1);
-    assertThat(feed.get(0))
+    assertThat(feed.getFirst())
         .hasFieldOrPropertyWithValue("id", eventId)
         .hasFieldOrPropertyWithValue("userId", user.getId())
         .hasFieldOrPropertyWithValue("eventType", EventType.LIKE)
@@ -69,6 +76,22 @@ class FeedGetTest extends DaoTest {
     assertThat(feedStorage.getFeedByUser(user.getId()))
         .extracting(Feed::getId)
         .containsExactly(older, newer);
+  }
+
+  @Test
+  void getFeedByAddLikeFromService() {
+    User user = addUser("test@yandex.ru", "TEST");
+    Film film = addFilm("TEST");
+
+    filmService.addLikeOnFilm(film.getId(), user.getId());
+
+    List<FeedResponse> result = feedService.getFeedByUser(user.getId());
+
+    assertThat(result.getFirst())
+        .hasFieldOrPropertyWithValue("userId", user.getId())
+        .hasFieldOrPropertyWithValue("eventType", EventType.LIKE)
+        .hasFieldOrPropertyWithValue("operation", Operation.ADD)
+        .hasFieldOrPropertyWithValue("entityId", film.getId());
   }
 
   @Test
