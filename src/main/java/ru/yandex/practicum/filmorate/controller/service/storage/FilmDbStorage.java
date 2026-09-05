@@ -27,10 +27,13 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
           + "FROM film AS f JOIN rating AS r ON f.rating_id = r.rating_id";
   private static final String FIND_BY_ID_FILM = FILM_SELECT + " WHERE f.film_id = ?";
   private static final String FIND_ALL_FILMS = FILM_SELECT + " ORDER BY f.film_id";
-  private static final String FIND_POPULAR =
-      FILM_SELECT
-          + " LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id "
-          + "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, r.rating_id, r.rating "
+  private static final String POPULAR_LIKES_JOIN =
+      " LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id ";
+  private static final String POPULAR_GENRE_JOIN =
+      " INNER JOIN film_to_genres AS fg ON f.film_id = fg.film_id AND fg.genre_id = ? ";
+  private static final String POPULAR_YEAR_FILTER = " WHERE YEAR(f.release_date) = ? ";
+  private static final String POPULAR_GROUP_ORDER =
+      "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, r.rating_id, r.rating "
           + "ORDER BY COUNT(fl.user_id) DESC, f.film_id LIMIT ?";
   private static final String DELETE_FILM_GENRES = "DELETE FROM film_to_genres WHERE film_id = ?";
   private static final String DELETE_FILM_LIKES = "DELETE FROM film_likes WHERE film_id = ?";
@@ -235,8 +238,23 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
   }
 
   @Override
-  public List<Film> getPopular(int count) {
-    List<Film> films = List.copyOf(findMany(FIND_POPULAR, count));
+  public List<Film> getPopular(int count, Integer genreId, Integer year) {
+    StringBuilder sql = new StringBuilder(FILM_SELECT);
+    List<Object> params = new ArrayList<>();
+
+    sql.append(POPULAR_LIKES_JOIN);
+    if (genreId != null) {
+      sql.append(POPULAR_GENRE_JOIN);
+      params.add(genreId);
+    }
+    if (year != null) {
+      sql.append(POPULAR_YEAR_FILTER);
+      params.add(year);
+    }
+    sql.append(POPULAR_GROUP_ORDER);
+    params.add(count);
+
+    List<Film> films = List.copyOf(findMany(sql.toString(), params.toArray()));
     films.forEach(film -> film.setGenres(getFilmGenres(film.getId())));
     return films;
   }
