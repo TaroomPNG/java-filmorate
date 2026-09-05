@@ -15,6 +15,9 @@ import ru.yandex.practicum.filmorate.controller.exceptions.UserNotFound;
 import ru.yandex.practicum.filmorate.controller.service.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.UserStorage;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Operation;
+import ru.yandex.practicum.filmorate.model.dto.feedDto.FeedPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.reviewDto.ReviewPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.reviewDto.ReviewPutRequest;
 import ru.yandex.practicum.filmorate.model.dto.reviewDto.ReviewResponse;
@@ -36,11 +39,21 @@ public class ReviewService {
   @Qualifier("FilmDbStorage")
   private FilmStorage filmStorage;
 
+  @Autowired private FeedService feedService;
+
   public ReviewResponse addReview(@Valid @NotNull ReviewPostRequest reviewPostRequest) {
     log.trace("Вызывается addReview");
     validateReviewContent(reviewPostRequest.getContent());
     validateUser(reviewPostRequest.getUserId());
     validateFilm(reviewPostRequest.getFilmId());
+
+    feedService.addToFeed(
+        new FeedPostRequest(
+            reviewPostRequest.getUserId(),
+            EventType.REVIEW,
+            Operation.ADD,
+            reviewPostRequest.getFilmId()));
+
     return new ReviewResponse(reviewStorage.addReview(reviewPostRequest));
   }
 
@@ -56,12 +69,25 @@ public class ReviewService {
     if (reviewPutRequest.getFilmId() != null) {
       validateFilm(reviewPutRequest.getFilmId());
     }
+
+    feedService.addToFeed(
+        new FeedPostRequest(
+            reviewPutRequest.getUserId(),
+            EventType.REVIEW,
+            Operation.UPDATE,
+            reviewPutRequest.getFilmId()));
+
     return new ReviewResponse(reviewStorage.updateReview(reviewPutRequest));
   }
 
   public boolean deleteReview(@NotNull Long reviewId) {
     log.trace("Вызывается deleteReview: ReviewID {}", reviewId);
     validateReviewExists(reviewId);
+
+    Long userId = getReviewById(reviewId).getUserId();
+    Long filmId = getReviewById(reviewId).getFilmId();
+    feedService.addToFeed(new FeedPostRequest(userId, EventType.REVIEW, Operation.REMOVE, filmId));
+
     return reviewStorage.deleteReview(reviewId);
   }
 

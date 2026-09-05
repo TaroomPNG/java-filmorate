@@ -19,9 +19,10 @@ public class FeedService {
   @Autowired FeedStorage feedStorage;
   @Autowired UserStorage userStorage;
 
-  public Long addToFeed(FeedPostRequest feed) {
+  public void addToFeed(FeedPostRequest feed) {
     log.trace("Запись действия в feed");
-    return feedStorage.addFeed(feed);
+    feedStorage.addFeed(feed);
+    log.debug("Запись - {}, успешно добавлена", feed);
   }
 
   public List<FeedResponse> getFeedByUser(Long userId) {
