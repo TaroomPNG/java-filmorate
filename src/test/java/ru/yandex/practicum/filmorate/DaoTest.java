@@ -70,10 +70,14 @@ public abstract class DaoTest {
   }
 
   protected Film addFilm(String name, Set<Genre> genres, Rating mpa) {
+    return addFilm(name, genres, mpa, DATE);
+  }
+
+  protected Film addFilm(String name, Set<Genre> genres, Rating mpa, LocalDate releaseDate) {
     return filmStorage.addFilm(
         FilmPostRequest.builder()
             .name(name)
-            .releaseDate(DATE)
+            .releaseDate(releaseDate)
             .duration(120)
             .genres(genres)
             .mpa(mpa)
