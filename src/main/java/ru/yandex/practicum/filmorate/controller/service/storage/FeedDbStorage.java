@@ -15,27 +15,15 @@ public class FeedDbStorage extends BaseRepository<Feed> implements FeedStorage {
       "INSERT INTO feed (timestamp, user_id, event_type, operation, entity_id) "
           + "VALUES (? , ? , ? , ? , ?)";
 
-  private static final String FEED_SELECT =
-      "SELECT fd.event_id, fd.timestamp, fd.user_id, fd.event_type, fd.operation, fd.entity_id "
-          + "FROM feed AS fd "
-          + "JOIN user_friendship AS uf ON fd.user_id = uf.friend_id "
-          + "JOIN friendship_status AS fs ON uf.status_id = fs.id ";
-  private static final String CONFIRMED_FRIENDSHIP = "fs.status = 'CONFIRMED' AND uf.user_id = ?";
   private static final String FIND_BY_ID_USER =
-      FEED_SELECT + "WHERE " + CONFIRMED_FRIENDSHIP + " ORDER BY fd.timestamp DESC";
+      "SELECT event_id, timestamp, user_id, event_type, operation, entity_id "
+          + "FROM feed WHERE user_id = ? ORDER BY timestamp ASC";
 
   private static final String FIND_BY_ID_USER_AND_TYPE =
-      FEED_SELECT
-          + "WHERE "
-          + CONFIRMED_FRIENDSHIP
-          + " AND fd.event_type = ? ORDER BY fd.timestamp DESC";
+      "SELECT event_id, timestamp, user_id, event_type, operation, entity_id "
+          + "FROM feed WHERE user_id = ? AND event_type = ? ORDER BY timestamp ASC";
 
-  private static final String EXISTS_BY_USER =
-      "SELECT COUNT(*) FROM feed AS fd "
-          + "JOIN user_friendship AS uf ON fd.user_id = uf.friend_id "
-          + "JOIN friendship_status AS fs ON uf.status_id = fs.id "
-          + "WHERE "
-          + CONFIRMED_FRIENDSHIP;
+  private static final String EXISTS_BY_USER = "SELECT COUNT(*) FROM feed WHERE user_id = ?";
 
   public FeedDbStorage(JdbcTemplate jdbc, RowMapper<Feed> mapper) {
     super(jdbc, mapper);

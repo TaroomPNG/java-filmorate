@@ -26,9 +26,12 @@ public class FeedService {
   }
 
   public List<FeedResponse> getFeedByUser(Long userId) {
+    log.trace("Запрос getFeedByUser");
     if (!userStorage.isUserExists(userId)) {
       throw new UserNotFound(userId);
     }
+
+    log.debug(feedStorage.getFeedByUser(userId).toString());
 
     return new ArrayList<>(
         feedStorage.getFeedByUser(userId).stream().map(FeedResponse::new).toList());

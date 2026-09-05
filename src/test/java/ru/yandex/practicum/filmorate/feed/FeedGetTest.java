@@ -15,112 +15,91 @@ class FeedGetTest extends DaoTest {
 
   @Test
   void getCorrectFeed() {
-    User viewer = addUser("test@yandex.ru", "TEST");
-    User friend = addUser("test2@yandex.ru", "TEST2");
+    User user = addUser("test@yandex.ru", "TEST");
     Film film = addFilm("TEST");
 
-    userStorage.addFriend(viewer.getId(), friend.getId());
-    Long eventId = addFeed(friend.getId(), EventType.LIKE, Operation.ADD, film.getId());
+    Long eventId = addFeed(user.getId(), EventType.LIKE, Operation.ADD, film.getId());
 
-    List<Feed> feed = feedStorage.getFeedByUser(viewer.getId());
+    List<Feed> feed = feedStorage.getFeedByUser(user.getId());
 
     assertThat(feed).hasSize(1);
     assertThat(feed.get(0))
         .hasFieldOrPropertyWithValue("id", eventId)
-        .hasFieldOrPropertyWithValue("userId", friend.getId())
+        .hasFieldOrPropertyWithValue("userId", user.getId())
         .hasFieldOrPropertyWithValue("eventType", EventType.LIKE)
         .hasFieldOrPropertyWithValue("operation", Operation.ADD)
         .hasFieldOrPropertyWithValue("entityId", film.getId());
   }
 
   @Test
-  void getFeedEmptyWithoutFriends() {
-    User viewer = addUser("test@yandex.ru", "TEST");
+  void getFeedEmptyWhenUserHasNoEvents() {
+    User user = addUser("test@yandex.ru", "TEST");
     User other = addUser("test2@yandex.ru", "TEST2");
     Film film = addFilm("TEST");
 
     addFeed(other.getId(), EventType.LIKE, Operation.ADD, film.getId());
 
-    assertThat(feedStorage.getFeedByUser(viewer.getId())).isEmpty();
+    assertThat(feedStorage.getFeedByUser(user.getId())).isEmpty();
   }
 
   @Test
-  void getFeedEmptyWhenFriendHasNoEvents() {
-    User viewer = addUser("test@yandex.ru", "TEST");
-    User friend = addUser("test2@yandex.ru", "TEST2");
-
-    userStorage.addFriend(viewer.getId(), friend.getId());
-
-    assertThat(feedStorage.getFeedByUser(viewer.getId())).isEmpty();
-  }
-
-  @Test
-  void getFeedOnlyFromFriends() {
-    User viewer = addUser("test@yandex.ru", "TEST");
-    User friend = addUser("test2@yandex.ru", "TEST2");
-    User stranger = addUser("test3@yandex.ru", "TEST3");
+  void getFeedOnlyOwnEvents() {
+    User user = addUser("test@yandex.ru", "TEST");
+    User other = addUser("test2@yandex.ru", "TEST2");
     Film film = addFilm("TEST");
 
-    userStorage.addFriend(viewer.getId(), friend.getId());
-    addFeed(friend.getId(), EventType.LIKE, Operation.ADD, film.getId());
-    addFeed(stranger.getId(), EventType.LIKE, Operation.ADD, film.getId());
+    addFeed(user.getId(), EventType.LIKE, Operation.ADD, film.getId());
+    addFeed(other.getId(), EventType.LIKE, Operation.ADD, film.getId());
 
-    assertThat(feedStorage.getFeedByUser(viewer.getId()))
+    assertThat(feedStorage.getFeedByUser(user.getId()))
         .extracting(Feed::getUserId)
-        .containsExactly(friend.getId());
+        .containsExactly(user.getId());
   }
 
   @Test
-  void getFeedMultipleEventsOrderedByTimestampDesc() throws InterruptedException {
-    User viewer = addUser("test@yandex.ru", "TEST");
-    User friend = addUser("test2@yandex.ru", "TEST2");
+  void getFeedMultipleEventsOrderedByTimestampAsc() throws InterruptedException {
+    User user = addUser("test@yandex.ru", "TEST");
     Film film = addFilm("TEST");
-    User third = addUser("test3@yandex.ru", "TEST3");
+    User friend = addUser("test2@yandex.ru", "TEST2");
 
-    userStorage.addFriend(viewer.getId(), friend.getId());
-    Long older = addFeed(friend.getId(), EventType.LIKE, Operation.ADD, film.getId());
+    Long older = addFeed(user.getId(), EventType.LIKE, Operation.ADD, film.getId());
     Thread.sleep(5);
-    Long newer = addFeed(friend.getId(), EventType.FRIEND, Operation.ADD, third.getId());
+    Long newer = addFeed(user.getId(), EventType.FRIEND, Operation.ADD, friend.getId());
 
-    assertThat(feedStorage.getFeedByUser(viewer.getId()))
+    assertThat(feedStorage.getFeedByUser(user.getId()))
         .extracting(Feed::getId)
-        .containsExactly(newer, older);
+        .containsExactly(older, newer);
   }
 
   @Test
   void getFeedByType() {
-    User viewer = addUser("test@yandex.ru", "TEST");
+    User user = addUser("test@yandex.ru", "TEST");
     User friend = addUser("test2@yandex.ru", "TEST2");
-    User third = addUser("test3@yandex.ru", "TEST3");
     Film film = addFilm("TEST");
 
-    userStorage.addFriend(viewer.getId(), friend.getId());
-    addFeed(friend.getId(), EventType.LIKE, Operation.ADD, film.getId());
-    addFeed(friend.getId(), EventType.FRIEND, Operation.ADD, third.getId());
-    addFeed(friend.getId(), EventType.LIKE, Operation.REMOVE, film.getId());
+    addFeed(user.getId(), EventType.LIKE, Operation.ADD, film.getId());
+    addFeed(user.getId(), EventType.FRIEND, Operation.ADD, friend.getId());
+    addFeed(user.getId(), EventType.LIKE, Operation.REMOVE, film.getId());
 
-    assertThat(feedStorage.getFeedByUserViaType(viewer.getId(), EventType.LIKE))
+    assertThat(feedStorage.getFeedByUserViaType(user.getId(), EventType.LIKE))
         .extracting(Feed::getEventType)
         .containsOnly(EventType.LIKE)
         .hasSize(2);
-    assertThat(feedStorage.getFeedByUserViaType(viewer.getId(), EventType.FRIEND))
+    assertThat(feedStorage.getFeedByUserViaType(user.getId(), EventType.FRIEND))
         .extracting(Feed::getEventType)
         .containsExactly(EventType.FRIEND);
-    assertThat(feedStorage.getFeedByUserViaType(viewer.getId(), EventType.REVIEW)).isEmpty();
+    assertThat(feedStorage.getFeedByUserViaType(user.getId(), EventType.REVIEW)).isEmpty();
   }
 
   @Test
   void isFeedExistByUser() {
-    User viewer = addUser("test@yandex.ru", "TEST");
-    User friend = addUser("test2@yandex.ru", "TEST2");
+    User user = addUser("test@yandex.ru", "TEST");
     Film film = addFilm("TEST");
 
-    userStorage.addFriend(viewer.getId(), friend.getId());
+    assertThat(feedStorage.isFeedExistByUser(user.getId())).isFalse();
 
-    assertThat(feedStorage.isFeedExistByUser(viewer.getId())).isFalse();
+    addFeed(user.getId(), EventType.LIKE, Operation.ADD, film.getId());
 
-    addFeed(friend.getId(), EventType.LIKE, Operation.ADD, film.getId());
-
-    assertThat(feedStorage.isFeedExistByUser(viewer.getId())).isTrue();
+    assertThat(feedStorage.isFeedExistByUser(user.getId())).isTrue();
   }
 }

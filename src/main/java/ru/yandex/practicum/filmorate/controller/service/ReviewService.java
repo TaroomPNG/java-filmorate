@@ -47,14 +47,11 @@ public class ReviewService {
     validateUser(reviewPostRequest.getUserId());
     validateFilm(reviewPostRequest.getFilmId());
 
+    ReviewResponse created = new ReviewResponse(reviewStorage.addReview(reviewPostRequest));
     feedService.addToFeed(
         new FeedPostRequest(
-            reviewPostRequest.getUserId(),
-            EventType.REVIEW,
-            Operation.ADD,
-            reviewPostRequest.getFilmId()));
-
-    return new ReviewResponse(reviewStorage.addReview(reviewPostRequest));
+            created.getUserId(), EventType.REVIEW, Operation.ADD, created.getReviewId()));
+    return created;
   }
 
   public ReviewResponse updateReview(@Valid @NotNull ReviewPutRequest reviewPutRequest) {
@@ -70,14 +67,11 @@ public class ReviewService {
       validateFilm(reviewPutRequest.getFilmId());
     }
 
+    ReviewResponse updated = new ReviewResponse(reviewStorage.updateReview(reviewPutRequest));
     feedService.addToFeed(
         new FeedPostRequest(
-            reviewPutRequest.getUserId(),
-            EventType.REVIEW,
-            Operation.UPDATE,
-            reviewPutRequest.getFilmId()));
-
-    return new ReviewResponse(reviewStorage.updateReview(reviewPutRequest));
+            updated.getUserId(), EventType.REVIEW, Operation.UPDATE, updated.getReviewId()));
+    return updated;
   }
 
   public boolean deleteReview(@NotNull Long reviewId) {
@@ -85,8 +79,8 @@ public class ReviewService {
     validateReviewExists(reviewId);
 
     Long userId = getReviewById(reviewId).getUserId();
-    Long filmId = getReviewById(reviewId).getFilmId();
-    feedService.addToFeed(new FeedPostRequest(userId, EventType.REVIEW, Operation.REMOVE, filmId));
+    feedService.addToFeed(
+        new FeedPostRequest(userId, EventType.REVIEW, Operation.REMOVE, reviewId));
 
     return reviewStorage.deleteReview(reviewId);
   }
