@@ -10,8 +10,10 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.controller.exceptions.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.controller.exceptions.FilmNotFound;
 import ru.yandex.practicum.filmorate.controller.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.controller.service.storage.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
@@ -260,5 +262,23 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     List<Object[]> params =
         uniqueIds.stream().map(genreId -> new Object[] {filmId, genreId}).toList();
     jdbc.batchUpdate(ADD_FILM_TO_GENRES, params);
+  }
+
+//  Добавлен метод для поиска фильм-а/-ов по названию или описанию.
+  @Override
+  public List<Film> searchFilms(String query) {
+    if (query == null || query.isBlank()) {
+        throw new ConditionsNotMetException("Поисковые данные не введены");
+    }
+    String template = "%" + query.trim() + "%";
+    List<Film> films = jdbc.query("""
+       SELECT f.*, r.rating FROM film AS f
+       LEFT JOIN rating AS r ON f.rating_id = r.rating_id
+       WHERE LOWER(f.name) LIKE LOWER(?)
+       OR LOWER(f.description) LIKE LOWER(?)
+       """, new FilmRowMapper(), template, template);
+
+    films.forEach(film -> film.setGenres(getFilmGenres(film.getId())));
+    return films;
   }
 }

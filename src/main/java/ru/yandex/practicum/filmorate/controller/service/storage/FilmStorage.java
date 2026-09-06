@@ -42,4 +42,6 @@ public interface FilmStorage {
   List<Film> getPopular(int count);
 
   void clear();
+
+  List<Film> searchFilms(String query);
 }
