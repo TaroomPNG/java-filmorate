@@ -9,12 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import ru.yandex.practicum.filmorate.controller.exceptions.ConditionsNotMetException;
-import ru.yandex.practicum.filmorate.controller.exceptions.DuplicationExceptions;
-import ru.yandex.practicum.filmorate.controller.exceptions.FilmNotFound;
-import ru.yandex.practicum.filmorate.controller.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.controller.exceptions.ReviewNotFound;
-import ru.yandex.practicum.filmorate.controller.exceptions.UserNotFound;
+import ru.yandex.practicum.filmorate.controller.exceptions.*;
 
 @ControllerAdvice
 @Slf4j
@@ -40,7 +35,8 @@ public class GlobalExceptionHandler {
     UserNotFound.class,
     FilmNotFound.class,
     ReviewNotFound.class,
-    NotFoundException.class
+    NotFoundException.class,
+    DirectorNotFound.class
   })
   public ResponseEntity<ErrorResponse> handleUserNotFound(RuntimeException ex) {
     String message = ex.getMessage();
@@ -75,9 +71,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException ex) {
     String message =
         ex.getConstraintViolations().stream()
-            .map(
-                violation ->
-                    violation.getPropertyPath() + ": " + violation.getMessage())
+            .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
             .collect(Collectors.joining("; "));
     ErrorResponse response = new ErrorResponse(message);
 
