@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.extern.jackson.Jacksonized;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
@@ -24,6 +25,7 @@ public class FilmResponse {
   private Integer duration;
   private Set<Genre> genres;
   private Rating mpa;
+  private Set<Director> directors;
   @Builder.Default private final Set<UserResponse> likeIds = new LinkedHashSet<>();
 
   public FilmResponse(Film film) {
@@ -35,5 +37,6 @@ public class FilmResponse {
     this.likeIds = film.getUserLikeResponse();
     this.genres = film.getGenres();
     this.mpa = film.getMpa();
+    this.directors = film.getDirectors();
   }
 }
