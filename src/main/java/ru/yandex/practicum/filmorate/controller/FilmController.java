@@ -2,11 +2,14 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import java.util.Collection;
+import java.util.List;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.controller.service.FilmService;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmPutRequest;
 import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmResponse;
@@ -69,5 +72,10 @@ public class FilmController {
     return filmService.getTopFilms(count);
   }
 
-
+  // Search Mapping
+  @GetMapping("/search")
+  @ResponseStatus(HttpStatus.OK)
+  public List<FilmResponse> searchFilms(@RequestParam String query) {
+      return filmService.searchFilms(query);
+  }
 }
