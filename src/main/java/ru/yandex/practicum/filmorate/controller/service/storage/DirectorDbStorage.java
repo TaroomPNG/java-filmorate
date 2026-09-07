@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.controller.exceptions.DirectorNotFound;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.dto.directorDto.DirectorPostRequest;
@@ -48,6 +49,7 @@ public class DirectorDbStorage extends BaseRepository<Director> implements Direc
   }
 
   @Override
+  @Transactional
   public boolean deleteDirector(Long directorId) {
     if (!isDirectorExist(directorId)) {
       throw new DirectorNotFound(directorId);
@@ -67,7 +69,7 @@ public class DirectorDbStorage extends BaseRepository<Director> implements Direc
 
   @Override
   public List<Director> getAllDirectors() {
-    return findMany(FIND_ALL_DIRECTOR).stream().toList();
+    return List.copyOf(findMany(FIND_ALL_DIRECTOR));
   }
 
   @Override

@@ -95,11 +95,11 @@ CREATE TABLE IF NOT EXISTS director
 
 CREATE TABLE IF NOT EXISTS film_to_directors
 (
-    film_id     bigint,
-    director_id bigint,
+    film_id     bigint NOT NULL,
+    director_id bigint NOT NULL,
     CONSTRAINT pk_film_to_directors PRIMARY KEY (film_id, director_id),
     CONSTRAINT fk_film_directors_film FOREIGN KEY (film_id) REFERENCES film (film_id) ON DELETE CASCADE,
-    CONSTRAINT fk_film_directors_director FOREIGN KEY (director_id) REFERENCES director (director_id)
+    CONSTRAINT fk_film_directors_director FOREIGN KEY (director_id) REFERENCES director (director_id) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_review_film_useful
