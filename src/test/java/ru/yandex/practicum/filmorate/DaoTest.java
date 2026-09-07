@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.controller.service.storage.DirectorDbStorag
 import ru.yandex.practicum.filmorate.controller.service.FeedService;
 import ru.yandex.practicum.filmorate.controller.service.FilmService;
 import ru.yandex.practicum.filmorate.controller.service.storage.FeedDbStorage;
+import ru.yandex.practicum.filmorate.controller.service.UserService;
 import ru.yandex.practicum.filmorate.controller.service.storage.FilmDbStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.ReviewDbStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.UserDbStorage;
@@ -48,7 +49,7 @@ import ru.yandex.practicum.filmorate.model.dto.userDto.UserPostRequest;
   FeedRowMapper.class,
   FilmService.class,
   FeedService.class,
-  ReviewRowMapper.class
+  UserService.class,
 })
 @TestPropertySource(
     properties = {
@@ -63,6 +64,8 @@ public abstract class DaoTest {
   @Autowired protected FeedDbStorage feedStorage;
   @Autowired protected ReviewDbStorage reviewStorage;
   @Autowired protected DirectorDbStorage directorStorage;
+  @Autowired protected UserService userService;
+  @Autowired protected FilmService filmService;
 
   @BeforeEach
   void resetData() {
