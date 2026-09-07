@@ -182,6 +182,13 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
   }
 
   @Override
+  public boolean deleteFilm(long id) {
+    jdbc.update(DELETE_FILM_GENRES, id);
+    jdbc.update(DELETE_FILM_LIKES, id);
+    return delete(DELETE_BY_ID_FILM, id);
+  }
+
+  @Override
   public Film getFilmById(long id) {
     Optional<Film> optionalFilm = findOne(FIND_BY_ID_FILM, id);
     if (optionalFilm.isEmpty()) {
