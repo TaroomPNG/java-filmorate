@@ -147,7 +147,11 @@ public class FilmService {
     }
   }
 
-    public List<FilmResponse> searchFilms(String query) {
-      return filmStorage.searchFilms(query).stream().map(FilmResponse::new).toList();
-    }
+  public List<FilmResponse> searchFilms(String query) {
+    return filmStorage.searchFilms(query).stream().map(FilmResponse::new).toList();
+  }
+
+  public List<FilmResponse> getCommonFilms(long userId1, long userId2) {
+    return filmStorage.getCommonFilms(userId1, userId2).stream().map(FilmResponse::new).toList();
+  }
 }
