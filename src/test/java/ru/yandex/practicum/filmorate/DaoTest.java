@@ -8,17 +8,23 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
+import ru.yandex.practicum.filmorate.controller.service.FeedService;
+import ru.yandex.practicum.filmorate.controller.service.FilmService;
+import ru.yandex.practicum.filmorate.controller.service.storage.FeedDbStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.FilmDbStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.ReviewDbStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.UserDbStorage;
+import ru.yandex.practicum.filmorate.controller.service.storage.mapper.FeedRowMapper;
 import ru.yandex.practicum.filmorate.controller.service.storage.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.controller.service.storage.mapper.ReviewRowMapper;
 import ru.yandex.practicum.filmorate.controller.service.storage.mapper.UserRowMapper;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.dto.feedDto.FeedPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.reviewDto.ReviewPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserPostRequest;
@@ -29,8 +35,12 @@ import ru.yandex.practicum.filmorate.model.dto.userDto.UserPostRequest;
   UserDbStorage.class,
   FilmDbStorage.class,
   ReviewDbStorage.class,
+  FeedDbStorage.class,
   UserRowMapper.class,
   FilmRowMapper.class,
+  FeedRowMapper.class,
+  FilmService.class,
+  FeedService.class,
   ReviewRowMapper.class
 })
 @TestPropertySource(
@@ -43,13 +53,19 @@ public abstract class DaoTest {
 
   @Autowired protected UserDbStorage userStorage;
   @Autowired protected FilmDbStorage filmStorage;
+  @Autowired protected FeedDbStorage feedStorage;
   @Autowired protected ReviewDbStorage reviewStorage;
 
   @BeforeEach
   void resetData() {
+    feedStorage.clear();
     reviewStorage.clear();
     filmStorage.clear();
     userStorage.clear();
+  }
+
+  protected Long addFeed(Long userId, EventType type, Operation operation, Long entityId) {
+    return feedStorage.addFeed(new FeedPostRequest(userId, type, operation, entityId));
   }
 
   protected User addUser(String email, String login) {
@@ -62,10 +78,14 @@ public abstract class DaoTest {
   }
 
   protected Film addFilm(String name, Set<Genre> genres, Rating mpa) {
+    return addFilm(name, genres, mpa, DATE);
+  }
+
+  protected Film addFilm(String name, Set<Genre> genres, Rating mpa, LocalDate releaseDate) {
     return filmStorage.addFilm(
         FilmPostRequest.builder()
             .name(name)
-            .releaseDate(DATE)
+            .releaseDate(releaseDate)
             .duration(120)
             .genres(genres)
             .mpa(mpa)
