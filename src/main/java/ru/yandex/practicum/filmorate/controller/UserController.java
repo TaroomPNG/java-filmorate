@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.model.dto.feedDto.FeedResponse;
 import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmResponse;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.dto.feedDto.FeedResponse;
+import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmResponse;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserPutRequest;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserResponse;
@@ -80,6 +81,12 @@ public class UserController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public UserResponse deleteFriend(@PathVariable Long id, @PathVariable Long friendId) {
     return userService.deleteFriend(id, friendId);
+  }
+
+  @GetMapping("/{id}/recommendations")
+  @ResponseStatus(HttpStatus.OK)
+  public Collection<FilmResponse> getRecommendations(@PathVariable Long id) {
+      return userService.getRecommendations(id);
   }
 
   @GetMapping("/{id}/feed")
