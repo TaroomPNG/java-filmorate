@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.controller.exceptions.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.controller.exceptions.FilmNotFound;
 import ru.yandex.practicum.filmorate.controller.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.controller.exceptions.UserNotFound;
 import ru.yandex.practicum.filmorate.controller.service.storage.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -63,18 +64,34 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
       "SELECT u.* FROM \"user\" AS u "
           + "JOIN film_likes AS fl ON u.user_id = fl.user_id WHERE fl.film_id = ?";
 
+  private static final String SEARCH_FILMS =
+      "SELECT f.*, r.rating FROM film AS f "
+          + "LEFT JOIN rating AS r ON f.rating_id = r.rating_id "
+          + "WHERE LOWER(f.name) LIKE LOWER(?) "
+          + "OR LOWER(f.description) LIKE LOWER(?)";
+
+  private static final String FIND_COMMON_FILMS =
+      "SELECT f.* FROM film AS f "
+          + "INNER JOIN film_likes AS fl1 ON f.film_id = fl1.film_id "
+          + "INNER JOIN film_likes AS fl2 ON f.film_id = fl2.film_id "
+          + "WHERE fl1.user_id = ? AND fl2.user_id = ?";
+
   private final RowMapper<Genre> genreMapper =
       (rs, rowNum) -> new Genre(rs.getInt("genre_id"), rs.getString("genre"));
   private final RowMapper<Rating> ratingMapper =
       (rs, rowNum) -> new Rating(rs.getInt("rating_id"), rs.getString("rating"));
   private final RowMapper<User> userMapper;
 
+  private UserStorage userStorage;
+
   public FilmDbStorage(
       JdbcTemplate jdbc,
       @Qualifier("filmRowMapper") RowMapper<Film> mapper,
-      @Qualifier("userRowMapper") RowMapper<User> userMapper) {
+      @Qualifier("userRowMapper") RowMapper<User> userMapper,
+      @Qualifier("userDbStorage") UserStorage userStorage) {
     super(jdbc, mapper);
     this.userMapper = userMapper;
+    this.userStorage = userStorage;
   }
 
   @Override
@@ -271,14 +288,30 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         throw new ConditionsNotMetException("Поисковые данные не введены");
     }
     String template = "%" + query.trim() + "%";
-    List<Film> films = jdbc.query("""
-       SELECT f.*, r.rating FROM film AS f
-       LEFT JOIN rating AS r ON f.rating_id = r.rating_id
-       WHERE LOWER(f.name) LIKE LOWER(?)
-       OR LOWER(f.description) LIKE LOWER(?)
-       """, new FilmRowMapper(), template, template);
+    List<Film> films = jdbc.query(SEARCH_FILMS, new FilmRowMapper(), template, template);
 
     films.forEach(film -> film.setGenres(getFilmGenres(film.getId())));
     return films;
   }
+
+  //  Добавлен метод для получения общих фильмов у двух разных пользователей.
+  public List<Film> getCommonFilms(long userId1, long userId2) {
+      if (userId1 <= 0 || userId2 <= 0) {
+            throw new ConditionsNotMetException("ID пользователя должен быть положительным числом");
+      }
+      if (userId1 == userId2) {
+          throw new ConditionsNotMetException("Пользователи должны быть разные");
+      }
+      if (!userStorage.isUserExists(userId1)) {
+          throw new UserNotFound(userId1);
+      }
+      if (!userStorage.isUserExists(userId2)) {
+          throw new UserNotFound(userId2);
+      }
+
+      List<Film> films = jdbc.query(FIND_COMMON_FILMS, new FilmRowMapper(), userId1, userId2);
+
+      films.forEach(film -> film.setGenres(getFilmGenres(film.getId())));
+      return films;
+    }
 }
