@@ -289,29 +289,27 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     }
     String template = "%" + query.trim() + "%";
     List<Film> films = jdbc.query(SEARCH_FILMS, new FilmRowMapper(), template, template);
-
     films.forEach(film -> film.setGenres(getFilmGenres(film.getId())));
     return films;
   }
 
   //  Добавлен метод для получения общих фильмов у двух разных пользователей.
+  @Override
   public List<Film> getCommonFilms(long userId1, long userId2) {
-      if (userId1 <= 0 || userId2 <= 0) {
-            throw new ConditionsNotMetException("ID пользователя должен быть положительным числом");
-      }
-      if (userId1 == userId2) {
-          throw new ConditionsNotMetException("Пользователи должны быть разные");
-      }
-      if (!userStorage.isUserExists(userId1)) {
-          throw new UserNotFound(userId1);
-      }
-      if (!userStorage.isUserExists(userId2)) {
-          throw new UserNotFound(userId2);
-      }
-
-      List<Film> films = jdbc.query(FIND_COMMON_FILMS, new FilmRowMapper(), userId1, userId2);
-
+    if (userId1 <= 0 || userId2 <= 0) {
+          throw new ConditionsNotMetException("ID пользователя должен быть положительным числом");
+    }
+    if (userId1 == userId2) {
+        throw new ConditionsNotMetException("Пользователи должны быть разные");
+    }
+    if (!userStorage.isUserExists(userId1)) {
+        throw new UserNotFound(userId1);
+    }
+    if (!userStorage.isUserExists(userId2)) {
+        throw new UserNotFound(userId2);
+    }
+    List<Film> films = jdbc.query(FIND_COMMON_FILMS, new FilmRowMapper(), userId1, userId2);
       films.forEach(film -> film.setGenres(getFilmGenres(film.getId())));
       return films;
-    }
+  }
 }
