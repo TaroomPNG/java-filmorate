@@ -62,9 +62,9 @@ public class FilmService {
     return new FilmResponse(filmStorage.getFilmById(filmId));
   }
 
-  public List<FilmResponse> getTopFilms(int maxPosts) {
-    log.trace("Запрос getTopFilms");
-    return filmStorage.getPopular(maxPosts).stream().map(FilmResponse::new).toList();
+  public List<FilmResponse> getTopFilms(int count, Integer genreId, Integer year) {
+    log.trace("Запрос getTopFilms: count {}, genreId {}, year {}", count, genreId, year);
+    return filmStorage.getPopular(count, genreId, year).stream().map(FilmResponse::new).toList();
   }
 
   public Collection<FilmResponse> getFilms() {
