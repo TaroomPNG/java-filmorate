@@ -14,6 +14,7 @@ import ru.yandex.practicum.filmorate.controller.exceptions.UserNotFound;
 import ru.yandex.practicum.filmorate.controller.service.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.UserStorage;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmPostRequest;
