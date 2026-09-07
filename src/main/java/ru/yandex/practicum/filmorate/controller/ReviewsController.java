@@ -66,7 +66,7 @@ public class ReviewsController {
     @DeleteMapping("/{id}/like/{userId}")
     public ResponseEntity<ReviewResponse> removeLike(
             @PathVariable @NotNull Long id, @PathVariable @NotNull Long userId) {
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(reviewService.removeLike(id, userId));
+        return ResponseEntity.ok(reviewService.removeLike(id, userId));
     }
 
     @DeleteMapping("/{id}/dislike/{userId}")

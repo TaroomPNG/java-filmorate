@@ -56,7 +56,7 @@ public class FilmController {
 
     @DeleteMapping("/{id}/like/{userId}")
     public ResponseEntity<FilmResponse> deleteLike(@PathVariable Long id, @PathVariable Long userId) {
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(filmService.deleteLikeOnFilm(id, userId));
+        return ResponseEntity.ok(filmService.deleteLikeOnFilm(id, userId));
     }
 
     @GetMapping("/popular")

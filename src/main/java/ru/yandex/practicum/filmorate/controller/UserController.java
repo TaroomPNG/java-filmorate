@@ -71,7 +71,7 @@ public class UserController {
 
     @DeleteMapping("/{id}/friends/{friendId}")
     public ResponseEntity<UserResponse> deleteFriend(@PathVariable Long id, @PathVariable Long friendId) {
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(userService.deleteFriend(id, friendId));
+        return ResponseEntity.ok(userService.deleteFriend(id, friendId));
     }
 
   @GetMapping("/{id}/recommendations")
