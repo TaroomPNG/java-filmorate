@@ -3,16 +3,13 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 
 import java.util.Collection;
-import java.util.List;
+
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.controller.service.FeedService;
 import ru.yandex.practicum.filmorate.controller.service.UserService;
-import ru.yandex.practicum.filmorate.model.EventType;
-import ru.yandex.practicum.filmorate.model.dto.feedDto.FeedResponse;
-import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmResponse;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.dto.feedDto.FeedResponse;
 import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmResponse;
@@ -25,8 +22,8 @@ import ru.yandex.practicum.filmorate.model.dto.userDto.UserResponse;
 @AllArgsConstructor
 public class UserController {
 
-  private final UserService userService;
-  private final FeedService feedService;
+    private final UserService userService;
+    private final FeedService feedService;
 
     @GetMapping
     public ResponseEntity<Collection<UserResponse>> getAllUsers() {
@@ -74,24 +71,19 @@ public class UserController {
         return ResponseEntity.ok(userService.deleteFriend(id, friendId));
     }
 
-  @GetMapping("/{id}/recommendations")
-  public ResponseEntity<Collection<FilmResponse>> getRecommendations(@PathVariable Long id) {
-      return ResponseEntity.ok(userService.getRecommendations(id));
-  }
+    @GetMapping("/{id}/feed")
+    public ResponseEntity<Collection<FeedResponse>> getFeedByUser(@PathVariable Long id) {
+        return ResponseEntity.ok(feedService.getFeedByUser(id));
+    }
 
-  @GetMapping("/{id}/feed")
-  public ResponseEntity<Collection<FeedResponse>> getFeedByUser(@PathVariable Long id) {
-    return ResponseEntity.ok(feedService.getFeedByUser(id));
-  }
+    @GetMapping("/{id}/feed/{type}")
+    public ResponseEntity<Collection<FeedResponse>> getFeedByType(@PathVariable Long id, @PathVariable EventType type) {
+        return ResponseEntity.ok(feedService.getFeedByEvent(id, type));
+    }
 
-  @GetMapping("/{id}/feed/{type}")
-  public ResponseEntity<Collection<FeedResponse>> getFeedByType(@PathVariable Long id, @PathVariable EventType type) {
-    return ResponseEntity.ok(feedService.getFeedByEvent(id, type));
-  }
-
-  @GetMapping("/{id}/recommendations")
-  @ResponseStatus(HttpStatus.OK)
-  public Collection<FilmResponse> getRecommendations(@PathVariable Long id) {
-      return userService.getRecommendations(id);
-  }
+    @GetMapping("/{id}/recommendations")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<FilmResponse> getRecommendations(@PathVariable Long id) {
+        return userService.getRecommendations(id);
+    }
 }
