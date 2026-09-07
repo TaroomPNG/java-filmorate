@@ -191,36 +191,40 @@ public class FilmService {
     }
   }
 
-    public List<FilmResponse> searchFilms(String query, String by) {
-        if (query == null || query.isBlank()) {
-            throw new ConditionsNotMetException("Query не может быть пустым");
-        }
-        if (by == null || by.isBlank()) {
-            throw new ConditionsNotMetException("By не может быть пустым");
-        }
-
-        String[] byParams = by.toLowerCase().trim().split(",");
-
-        boolean searchByTitle = false;
-        boolean searchByDirector = false;
-
-        for (String patameter : byParams) {
-            String correctBy = patameter.trim();
-
-            if (!ALLOWED_SEARCH_BY.contains(correctBy)) {
-                throw new ConditionsNotMetException("Некорректное значение by! Должен быть 'title' или 'director'");
-            }
-
-            if ("title".equals(correctBy)) {
-                searchByTitle = true;
-            } else if ("director".equals(correctBy)) {
-                searchByDirector = true;
-            }
-        }
-
-        return filmStorage.searchFilms(query, searchByTitle, searchByDirector)
-                .stream()
-                .map(FilmResponse::new)
-                .toList();
+  public List<FilmResponse> searchFilms(String query, String by) {
+    if (query == null || query.isBlank()) {
+      throw new ConditionsNotMetException("Query не может быть пустым");
     }
+    if (by == null || by.isBlank()) {
+      throw new ConditionsNotMetException("By не может быть пустым");
+    }
+
+    String[] byParams = by.toLowerCase().trim().split(",");
+
+    boolean searchByTitle = false;
+    boolean searchByDirector = false;
+
+    for (String patameter : byParams) {
+      String correctBy = patameter.trim();
+
+      if (!ALLOWED_SEARCH_BY.contains(correctBy)) {
+        throw new ConditionsNotMetException(
+            "Некорректное значение by! Должен быть 'title' или 'director'");
+      }
+
+      if ("title".equals(correctBy)) {
+        searchByTitle = true;
+      } else if ("director".equals(correctBy)) {
+        searchByDirector = true;
+      }
+    }
+
+    return filmStorage.searchFilms(query, searchByTitle, searchByDirector).stream()
+        .map(FilmResponse::new)
+        .toList();
+  }
+
+  public List<FilmResponse> getCommonFilms(long userId1, long userId2) {
+    return filmStorage.getCommonFilms(userId1, userId2).stream().map(FilmResponse::new).toList();
+  }
 }
