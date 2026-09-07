@@ -16,12 +16,13 @@ import ru.yandex.practicum.filmorate.controller.service.UserService;
 import ru.yandex.practicum.filmorate.controller.service.storage.FilmDbStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.ReviewDbStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.UserDbStorage;
-import ru.yandex.practicum.filmorate.controller.service.storage.mapper.DirectorRowMapper;
 import ru.yandex.practicum.filmorate.controller.service.storage.mapper.FeedRowMapper;
+import ru.yandex.practicum.filmorate.controller.service.storage.mapper.DirectorRowMapper;
 import ru.yandex.practicum.filmorate.controller.service.storage.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.controller.service.storage.mapper.ReviewRowMapper;
 import ru.yandex.practicum.filmorate.controller.service.storage.mapper.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.Director;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -48,8 +49,8 @@ import ru.yandex.practicum.filmorate.model.dto.userDto.UserPostRequest;
   DirectorRowMapper.class,
   FeedRowMapper.class,
   FilmService.class,
-  FeedService.class,
   UserService.class,
+  FeedService.class,
 })
 @TestPropertySource(
     properties = {
