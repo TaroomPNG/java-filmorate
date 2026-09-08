@@ -44,6 +44,11 @@ public class UserController {
     return ResponseEntity.ok(userService.updateUser(userPutRequest));
   }
 
+  @DeleteMapping("/{userId}")
+  public ResponseEntity<Boolean> deleteUser(@PathVariable Long userId) {
+      return ResponseEntity.status(HttpStatus.NO_CONTENT).body(userService.deleteUser(userId));
+  }
+
   // FriendMapping
 
   @GetMapping("/{id}/friends")
@@ -86,7 +91,4 @@ public class UserController {
   public ResponseEntity<Collection<FilmResponse>> getRecommendations(@PathVariable Long id) {
     return ResponseEntity.ok(userService.getRecommendations(id));
   }
-
-
-
 }
