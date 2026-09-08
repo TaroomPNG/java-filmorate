@@ -35,7 +35,8 @@ public class GlobalExceptionHandler {
     UserNotFound.class,
     FilmNotFound.class,
     ReviewNotFound.class,
-    NotFoundException.class
+    NotFoundException.class,
+    DirectorNotFound.class
   })
   public ResponseEntity<ErrorResponse> handleUserNotFound(RuntimeException ex) {
     String message = ex.getMessage();

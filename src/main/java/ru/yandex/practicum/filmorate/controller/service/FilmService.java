@@ -3,17 +3,17 @@ package ru.yandex.practicum.filmorate.controller.service;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.controller.exceptions.ConditionsNotMetException;
-import ru.yandex.practicum.filmorate.controller.exceptions.FilmNotFound;
-import ru.yandex.practicum.filmorate.controller.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.controller.exceptions.UserNotFound;
+import ru.yandex.practicum.filmorate.controller.exceptions.*;
+import ru.yandex.practicum.filmorate.controller.service.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.UserStorage;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Operation;
@@ -40,6 +40,10 @@ public class FilmService {
   @Autowired
   @Qualifier("ReviewDbStorage")
   ReviewStorage reviewStorage;
+
+  @Autowired
+  @Qualifier("DirectorDbStorage")
+  DirectorStorage directorStorage;
 
   @Autowired private FeedService feedService;
 
@@ -76,6 +80,21 @@ public class FilmService {
     return filmStorage.getPopular(count, genreId, year).stream().map(FilmResponse::new).toList();
   }
 
+  public List<FilmResponse> getFilmsByDirector(Long directorId, String sortBy) {
+    log.trace("Запрос getFilmsByDirector: directorId={}, sortBy={}", directorId, sortBy);
+    if (!directorStorage.isDirectorExist(directorId)) {
+      throw new DirectorNotFound(directorId);
+    }
+    return filmStorage.getFilmsByDirector(directorId, sortBy).stream()
+        .map(FilmResponse::new)
+        .toList();
+  }
+
+  public List<FilmResponse> getTopFilms(int maxPosts) {
+    log.trace("Запрос getTopFilms");
+    return filmStorage.getPopular(maxPosts).stream().map(FilmResponse::new).toList();
+  }
+
   public Collection<FilmResponse> getFilms() {
     log.trace("Запрос FilmResponse через getFilms");
     return filmStorage.getFilms().stream().map(FilmResponse::new).toList();
@@ -91,6 +110,7 @@ public class FilmService {
     validateReleaseDate(filmPostRequest.getReleaseDate());
     validateMpa(filmPostRequest.getMpa());
     validateGenres(filmPostRequest.getGenres());
+    validateDirectors(filmPostRequest.getDirectors());
     return new FilmResponse(filmStorage.addFilm(filmPostRequest));
   }
 
@@ -105,11 +125,14 @@ public class FilmService {
     if (filmPutRequest.getGenres() != null) {
       validateGenres(filmPutRequest.getGenres());
     }
+    if (filmPutRequest.getDirectors() != null) {
+      validateDirectors(filmPutRequest.getDirectors());
+    }
     return new FilmResponse(filmStorage.updateFilm(filmPutRequest));
   }
 
   public boolean deleteFilm(Long id) {
-    log.trace("Запрос FilmResponse через deleteFilm");
+    log.trace("Запрос boolean через deleteFilm");
     reviewStorage.deleteByFilmId(id);
     return filmStorage.deleteFilm(id);
   }
@@ -138,13 +161,25 @@ public class FilmService {
     }
   }
 
+  private void validateDirectors(Set<Director> directors) {
+    if (directors == null) {
+      return;
+    }
+
+    for (Director director : directors) {
+      if (director.getId() == null || !directorStorage.isDirectorExist(director.getId())) {
+        throw new DirectorNotFound(director.getId());
+      }
+    }
+  }
+
   private void validateMpa(Rating mpa) {
     if (mpa == null || mpa.getId() == null || !filmStorage.isRatingExists(mpa.getId())) {
       throw new NotFoundException("Указанный рейтинг не найден");
     }
   }
 
-  private void validateGenres(java.util.Set<Genre> genres) {
+  private void validateGenres(Set<Genre> genres) {
     if (genres == null) {
       return;
     }

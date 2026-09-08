@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller.service.storage;
 
 import java.util.List;
 import java.util.Set;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
@@ -24,6 +25,10 @@ public interface FilmStorage {
   Set<Genre> getFilmGenres(long id);
 
   List<Genre> getGenres();
+
+  List<Film> getFilmsByDirector(long directorId, String sortBy);
+
+  Set<Director> getFilmDirectors(long id);
 
   Genre getGenreById(long id);
 
