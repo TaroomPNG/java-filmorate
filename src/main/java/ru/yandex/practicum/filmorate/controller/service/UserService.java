@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controller.exceptions.UserNotFound;
 import ru.yandex.practicum.filmorate.controller.service.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.UserStorage;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Operation;
+import ru.yandex.practicum.filmorate.model.dto.feedDto.FeedPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserPutRequest;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserResponse;
@@ -20,6 +23,8 @@ public class UserService {
   @Autowired
   @Qualifier("UserDbStorage")
   UserStorage userStorage;
+
+  @Autowired private FeedService feedService;
 
   @Autowired
   @Qualifier("ReviewDbStorage")
@@ -34,6 +39,8 @@ public class UserService {
       throw new UserNotFound(friendId);
     }
     userStorage.addFriend(userId, friendId);
+    feedService.addToFeed(new FeedPostRequest(userId, EventType.FRIEND, Operation.ADD, friendId));
+
     return new UserResponse(userStorage.getUserById(userId));
   }
 
@@ -46,6 +53,9 @@ public class UserService {
       throw new UserNotFound(friendId);
     }
     userStorage.removeFriend(userId, friendId);
+    feedService.addToFeed(
+        new FeedPostRequest(userId, EventType.FRIEND, Operation.REMOVE, friendId));
+
     return new UserResponse(userStorage.getUserById(userId));
   }
 

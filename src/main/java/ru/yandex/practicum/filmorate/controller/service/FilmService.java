@@ -14,8 +14,11 @@ import ru.yandex.practicum.filmorate.controller.service.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.UserStorage;
 import ru.yandex.practicum.filmorate.model.Director;
+import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.Rating;
+import ru.yandex.practicum.filmorate.model.dto.feedDto.FeedPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmPutRequest;
 import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmResponse;
@@ -42,6 +45,8 @@ public class FilmService {
   @Qualifier("DirectorDbStorage")
   DirectorStorage directorStorage;
 
+  @Autowired private FeedService feedService;
+
   public FilmResponse deleteLikeOnFilm(Long filmId, Long userId) {
     log.trace("Вызывается deleteLikeOnFilm: FilmID {} - UserID {}", filmId, userId);
     if (!filmStorage.isFilmExists(filmId)) {
@@ -51,6 +56,8 @@ public class FilmService {
       throw new UserNotFound(userId);
     }
     filmStorage.removeLike(filmId, userId);
+    feedService.addToFeed(new FeedPostRequest(userId, EventType.LIKE, Operation.REMOVE, filmId));
+
     return new FilmResponse(filmStorage.getFilmById(filmId));
   }
 
@@ -63,7 +70,14 @@ public class FilmService {
       throw new UserNotFound(userId);
     }
     filmStorage.addLike(filmId, userId);
+    feedService.addToFeed(new FeedPostRequest(userId, EventType.LIKE, Operation.ADD, filmId));
+
     return new FilmResponse(filmStorage.getFilmById(filmId));
+  }
+
+  public List<FilmResponse> getTopFilms(int count, Integer genreId, Integer year) {
+    log.trace("Запрос getTopFilms: count {}, genreId {}, year {}", count, genreId, year);
+    return filmStorage.getPopular(count, genreId, year).stream().map(FilmResponse::new).toList();
   }
 
   public List<FilmResponse> getFilmsByDirector(Long directorId, String sortBy) {
