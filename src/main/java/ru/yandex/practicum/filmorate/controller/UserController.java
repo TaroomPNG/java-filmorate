@@ -5,11 +5,13 @@ import java.util.Collection;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.controller.service.FeedService;
 import ru.yandex.practicum.filmorate.controller.service.UserService;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.dto.feedDto.FeedResponse;
+import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmResponse;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserPutRequest;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserResponse;
@@ -90,4 +92,12 @@ public class UserController {
   public List<FeedResponse> getFeedByType(@PathVariable Long id, @PathVariable EventType type) {
     return feedService.getFeedByEvent(id, type);
   }
+
+    @GetMapping("/{id}/recommendations")
+    public ResponseEntity<Collection<FilmResponse>> getRecommendations(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getRecommendations(id));
+    }
+
+
+
 }
