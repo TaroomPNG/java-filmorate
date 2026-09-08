@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
+import ru.yandex.practicum.filmorate.controller.service.FilmService;
 import ru.yandex.practicum.filmorate.controller.service.storage.FilmDbStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.ReviewDbStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.UserDbStorage;
@@ -31,7 +32,8 @@ import ru.yandex.practicum.filmorate.model.dto.userDto.UserPostRequest;
   ReviewDbStorage.class,
   UserRowMapper.class,
   FilmRowMapper.class,
-  ReviewRowMapper.class
+  ReviewRowMapper.class,
+  FilmService.class,
 })
 @TestPropertySource(
     properties = {
