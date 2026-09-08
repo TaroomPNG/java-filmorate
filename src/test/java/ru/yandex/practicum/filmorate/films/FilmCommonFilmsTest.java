@@ -2,13 +2,16 @@ package ru.yandex.practicum.filmorate.films;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import ru.yandex.practicum.filmorate.DaoTest;
 import ru.yandex.practicum.filmorate.controller.exceptions.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.controller.exceptions.UserNotFound;
+import ru.yandex.practicum.filmorate.controller.service.FilmService;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmResponse;
 
 import java.util.List;
 import java.util.Set;
@@ -17,6 +20,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 public class FilmCommonFilmsTest extends DaoTest {
+    @Autowired
+    private FilmService filmService;
+
     private Long user1Id;
     private Long user2Id;
     private Long user3Id;
@@ -44,25 +50,44 @@ public class FilmCommonFilmsTest extends DaoTest {
 
     @Test
     void getCommonFilms_WhenNoCommonFilms() {
-        List<Film> result = filmStorage.getCommonFilms(user1Id, user3Id);
+        List<FilmResponse> result = filmService.getCommonFilms(user1Id, user3Id);
         assertThat(result).isEmpty();
     }
 
     @Test
     void getCommonFilms_ShouldReturnCommonFilms() {
-        List<Film> result = filmStorage.getCommonFilms(user1Id, user2Id);
+        List<FilmResponse> result = filmService.getCommonFilms(user1Id, user2Id);
         assertThat(result).hasSize(1);
     }
 
     @Test
     void getCommonFilms_ShouldThrowException_WhenSameUser() {
-        assertThatThrownBy(() -> filmStorage.getCommonFilms(user1Id, user1Id))
+
+        assertThatThrownBy(() -> filmService.getCommonFilms(user1Id, user1Id))
+                .isInstanceOf(ConditionsNotMetException.class);
+    }
+
+    @Test
+    void getCommonFilms_ShouldThrowException_WhenUserIdIsZero() {
+        assertThatThrownBy(() -> filmService.getCommonFilms(0L, user1Id))
+                .isInstanceOf(ConditionsNotMetException.class);
+
+        assertThatThrownBy(() -> filmService.getCommonFilms(user1Id, 0L))
+                .isInstanceOf(ConditionsNotMetException.class);
+    }
+
+    @Test
+    void getCommonFilms_ShouldThrowException_WhenUserIdIsNegative() {
+        assertThatThrownBy(() -> filmService.getCommonFilms(-1L, user1Id))
+                .isInstanceOf(ConditionsNotMetException.class);
+
+        assertThatThrownBy(() -> filmService.getCommonFilms(user1Id, -1L))
                 .isInstanceOf(ConditionsNotMetException.class);
     }
 
     @Test
     void getCommonFilms_ShouldThrowException_WhenUserNotFound() {
-        assertThatThrownBy(() -> filmStorage.getCommonFilms(100500L, user1Id))
+        assertThatThrownBy(() -> filmService.getCommonFilms(100500L, user1Id))
                 .isInstanceOf(UserNotFound.class);
     }
 }

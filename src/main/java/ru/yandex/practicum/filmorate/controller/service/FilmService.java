@@ -224,7 +224,19 @@ public class FilmService {
         .toList();
   }
 
-  public List<FilmResponse> getCommonFilms(long userId1, long userId2) {
-    return filmStorage.getCommonFilms(userId1, userId2).stream().map(FilmResponse::new).toList();
+  public List<FilmResponse> getCommonFilms(long userId, long friendId) {
+      if (userId <= 0 || friendId <= 0) {
+          throw new ConditionsNotMetException("ID пользователя должен быть положительным числом");
+      }
+      if (userId == friendId) {
+          throw new ConditionsNotMetException("Пользователи должны быть разные");
+      }
+      if (!userStorage.isUserExists(userId)) {
+          throw new UserNotFound(userId);
+      }
+      if (!userStorage.isUserExists(friendId)) {
+          throw new UserNotFound(friendId);
+      }
+    return filmStorage.getCommonFilms(userId, friendId).stream().map(FilmResponse::new).toList();
   }
 }
