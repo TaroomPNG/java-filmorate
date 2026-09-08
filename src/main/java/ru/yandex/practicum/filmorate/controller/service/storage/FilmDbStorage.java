@@ -62,12 +62,6 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
       "SELECT u.* FROM \"user\" AS u "
           + "JOIN film_likes AS fl ON u.user_id = fl.user_id WHERE fl.film_id = ?";
 
-  private static final String SEARCH_FILMS =
-      "SELECT f.*, r.rating FROM film AS f "
-          + "LEFT JOIN rating AS r ON f.rating_id = r.rating_id "
-          + "WHERE LOWER(f.name) LIKE LOWER(?) "
-          + "OR LOWER(f.description) LIKE LOWER(?)";
-
   private static final String FIND_COMMON_FILMS =
       FILM_SELECT
           + " INNER JOIN film_likes AS fl1 ON f.film_id = fl1.film_id "
@@ -82,8 +76,6 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
   private final RowMapper<Rating> ratingMapper =
       (rs, rowNum) -> new Rating(rs.getInt("rating_id"), rs.getString("rating"));
   private final RowMapper<User> userMapper;
-
-  private UserStorage userStorage;
 
   public FilmDbStorage(
       JdbcTemplate jdbc,
