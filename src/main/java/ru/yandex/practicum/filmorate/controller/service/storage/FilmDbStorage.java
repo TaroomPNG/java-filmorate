@@ -66,6 +66,12 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
       "SELECT u.* FROM \"user\" AS u "
           + "JOIN film_likes AS fl ON u.user_id = fl.user_id WHERE fl.film_id = ?";
 
+  private static final String SEARCH_FILMS =
+      FILM_SELECT
+          + " LEFT JOIN film_to_directors AS ftd ON f.film_id = ftd.film_id "
+          + "LEFT JOIN director AS d ON ftd.director_id = d.director_id "
+          + "LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id ";
+
   private final RowMapper<Genre> genreMapper =
       (rs, rowNum) -> new Genre(rs.getInt("genre_id"), rs.getString("genre"));
   private final RowMapper<Rating> ratingMapper =
@@ -284,18 +290,31 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
 //  Добавлен метод для поиска фильм-а/-ов по названию или описанию.
   @Override
-  public List<Film> searchFilms(String query) {
-    if (query == null || query.isBlank()) {
-        throw new ConditionsNotMetException("Поисковые данные не введены");
-    }
+  public List<Film> searchFilms(String query, boolean searchByTitle, boolean searchByDirector) {
     String template = "%" + query.trim() + "%";
-    List<Film> films = jdbc.query("""
-       SELECT f.*, r.rating FROM film AS f
-       LEFT JOIN rating AS r ON f.rating_id = r.rating_id
-       WHERE LOWER(f.name) LIKE LOWER(?)
-       OR LOWER(f.description) LIKE LOWER(?)
-       """, new FilmRowMapper(), template, template);
 
+    StringBuilder sql = new StringBuilder(SEARCH_FILMS);
+    List<Object> params = new ArrayList<>();
+    boolean hasCondition = false;
+
+    if (searchByTitle) {
+        sql.append("WHERE LOWER(f.name) LIKE LOWER(?) ");
+        params.add(template);
+        hasCondition = true;
+    }
+    if (searchByDirector) {
+        if (hasCondition) {
+            sql.append("OR ");
+        } else {
+            sql.append("WHERE ");
+        }
+        sql.append("LOWER(d.name) LIKE ? ");
+        params.add(template);
+    }
+    sql.append("GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, r.rating_id, r.rating "
+            + "ORDER BY COUNT(fl.user_id) DESC, f.film_id");
+
+    List<Film> films = List.copyOf(findMany(sql.toString(), params.toArray()));
     films.forEach(film -> film.setGenres(getFilmGenres(film.getId())));
     return films;
   }

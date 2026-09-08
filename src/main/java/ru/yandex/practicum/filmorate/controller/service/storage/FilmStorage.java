@@ -47,5 +47,5 @@ public interface FilmStorage {
 
   void clear();
 
-  List<Film> searchFilms(String query);
+  List<Film> searchFilms(String query, boolean searchByTitle, boolean searchByDirector);
 }
