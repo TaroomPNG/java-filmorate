@@ -94,7 +94,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                     "JOIN film_likes AS fl2 ON fl1.film_id = fl2.film_id AND fl1.user_id != fl2.user_id " +
                     "WHERE fl1.user_id = ? " +
                     "GROUP BY fl2.user_id " +
-                    "ORDER BY fl2.user_id DESC " +
+                    "ORDER BY COUNT(fl2.film_id) DESC, fl2.user_id " +
                     "LIMIT 1) " +
                     "AND fl.film_id NOT IN (SELECT film_id FROM film_likes WHERE user_id = ?)";
 
@@ -341,6 +341,17 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     return films;
   }
 
+  @Override
+  public List<Film> getRecommendation(Long id) {
+      try {
+          List<Film> recFilms = jdbc.query(GET_RECOMMENDATION_FILMS, mapper, id, id);
+          fillGenresAndDirectors(recFilms);
+          return recFilms;
+      } catch (EmptyResultDataAccessException e) {
+          throw new NotFoundException("Пользователь с id " + id + " не найден");
+      }
+  }
+
   private void fillGenresAndDirectors(List<Film> films) {
     if (films.isEmpty()) {
       return;
@@ -413,14 +424,4 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         uniqueIds.stream().map(genreId -> new Object[] {filmId, genreId}).toList();
     jdbc.batchUpdate(ADD_FILM_TO_GENRES, params);
   }
-
-    public List<Film> getRecommendation(Long id) {
-        try {
-            List<Film> recFilms = jdbc.query(GET_RECOMMENDATION_FILMS, mapper, id, id);
-            recFilms.forEach(film -> film.setGenres(getFilmGenres(film.getId())));
-            return recFilms;
-        } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException("Пользователь с id " + id + " не найден");
-        }
-    }
 }
