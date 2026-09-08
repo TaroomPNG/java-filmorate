@@ -18,7 +18,7 @@ import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmResponse;
 @RequiredArgsConstructor
 public class FilmController {
 
-  @Getter private final FilmService filmService;
+  private final FilmService filmService;
 
   @GetMapping
   @ResponseStatus(HttpStatus.OK)
@@ -73,6 +73,12 @@ public class FilmController {
     return filmService.getTopFilms(count, genreId, year);
   }
 
+  @GetMapping("/director/{directorId}")
+  @ResponseStatus(HttpStatus.OK)
+  public Collection<FilmResponse> getFilmsByDirector(
+      @PathVariable Long directorId, @RequestParam String sortBy) {
+    return filmService.getFilmsByDirector(directorId, sortBy);
+  }
   // Search Mapping
   @GetMapping("/search")
   @ResponseStatus(HttpStatus.OK)

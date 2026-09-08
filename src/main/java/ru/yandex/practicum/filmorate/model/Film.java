@@ -18,6 +18,7 @@ public class Film {
   private Integer duration;
   private Set<Genre> genres;
   private Rating mpa;
+  private Set<Director> directors;
   private final Set<User> likeIds = new LinkedHashSet<>();
 
   public Set<UserResponse> getUserLikeResponse() {
@@ -32,9 +33,5 @@ public class Film {
                     .birthday(user.getBirthday())
                     .build())
         .collect(Collectors.toSet());
-  }
-
-  public int getLikeCount() {
-    return likeIds.size();
   }
 }
