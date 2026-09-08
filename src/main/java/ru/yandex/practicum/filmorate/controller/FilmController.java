@@ -77,7 +77,6 @@ public class FilmController {
       return filmService.searchFilms(query, by);
   }
 
-  // Common Films Mapping
   @GetMapping("/common")
   @ResponseStatus(HttpStatus.OK)
   public List<FilmResponse> getCommonFilms(@RequestParam long userId, @RequestParam long friendId) {

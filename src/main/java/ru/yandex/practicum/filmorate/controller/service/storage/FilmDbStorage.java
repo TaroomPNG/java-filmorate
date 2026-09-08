@@ -473,7 +473,6 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     return films;
   }
 
-  //  Добавлен метод для получения общих фильмов у двух разных пользователей.
   @Override
   public List<Film> getCommonFilms(long userId, long friendId) {
     List<Film> films = jdbc.query(FIND_COMMON_FILMS, new FilmRowMapper(), userId, friendId);
