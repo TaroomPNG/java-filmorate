@@ -114,9 +114,12 @@ public class UserService {
     return userStorage.deleteUser(id);
   }
 
-    public Collection<FilmResponse> getRecommendations(Long id) {
-        return filmStorage.getRecommendation(id).stream()
+  public List<FilmResponse> getRecommendations(Long id) {
+    if (!userStorage.isUserExists(id)) {
+        throw new UserNotFound(id);
+    }
+    return filmStorage.getRecommendation(id).stream()
                 .map(FilmResponse::new)
                 .toList();
-    }
+  }
 }
