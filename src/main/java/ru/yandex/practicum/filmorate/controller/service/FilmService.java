@@ -146,10 +146,6 @@ public class FilmService {
     }
   }
 
-  public List<FilmResponse> searchFilms(String query) {
-    return filmStorage.searchFilms(query).stream().map(FilmResponse::new).toList();
-  }
-
   public List<FilmResponse> getCommonFilms(long userId, long friendId) {
       if (userId <= 0 || friendId <= 0) {
           throw new ConditionsNotMetException("ID пользователя должен быть положительным числом");

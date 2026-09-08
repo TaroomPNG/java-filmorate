@@ -71,14 +71,6 @@ public class FilmController {
     return filmService.getTopFilms(count);
   }
 
-  // Search Mapping
-  @GetMapping("/search")
-  @ResponseStatus(HttpStatus.OK)
-  public List<FilmResponse> searchFilms(@RequestParam String query) {
-      return filmService.searchFilms(query);
-  }
-
-  // Common Films Mapping
   @GetMapping("/common")
   @ResponseStatus(HttpStatus.OK)
   public List<FilmResponse> getCommonFilms(@RequestParam long userId, @RequestParam long friendId) {
