@@ -281,19 +281,6 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     jdbc.batchUpdate(ADD_FILM_TO_GENRES, params);
   }
 
-//  Добавлен метод для поиска фильм-а/-ов по названию или описанию.
-  @Override
-  public List<Film> searchFilms(String query) {
-    if (query == null || query.isBlank()) {
-        throw new ConditionsNotMetException("Поисковые данные не введены");
-    }
-    String template = "%" + query.trim() + "%";
-    List<Film> films = jdbc.query(SEARCH_FILMS, new FilmRowMapper(), template, template);
-    films.forEach(film -> film.setGenres(getFilmGenres(film.getId())));
-    return films;
-  }
-
-  //  Добавлен метод для получения общих фильмов у двух разных пользователей.
   @Override
   public List<Film> getCommonFilms(long userId, long friendId) {
     List<Film> films = jdbc.query(FIND_COMMON_FILMS, new FilmRowMapper(), userId, friendId);

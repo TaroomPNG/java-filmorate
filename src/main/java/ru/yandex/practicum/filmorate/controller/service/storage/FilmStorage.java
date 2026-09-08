@@ -43,7 +43,5 @@ public interface FilmStorage {
 
   void clear();
 
-  List<Film> searchFilms(String query);
-
   List<Film> getCommonFilms(long userId1, long userId2);
 }
