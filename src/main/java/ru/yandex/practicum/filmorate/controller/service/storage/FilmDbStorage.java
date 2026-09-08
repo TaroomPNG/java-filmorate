@@ -8,10 +8,8 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.controller.exceptions.ConditionsNotMetException;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.filmorate.controller.exceptions.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.controller.exceptions.FilmNotFound;
 import ru.yandex.practicum.filmorate.controller.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.controller.service.storage.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
@@ -414,7 +412,6 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     jdbc.batchUpdate(ADD_FILM_TO_GENRES, params);
   }
 
-//  Добавлен метод для поиска фильм-а/-ов по названию или описанию.
   @Override
   public List<Film> searchFilms(String query, boolean searchByTitle, boolean searchByDirector) {
     String template = "%" + query.trim() + "%";
