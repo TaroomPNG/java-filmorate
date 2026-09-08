@@ -431,14 +431,14 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         } else {
             sql.append("WHERE ");
         }
-        sql.append("LOWER(d.name) LIKE ? ");
+        sql.append("LOWER(d.name) LIKE LOWER(?) ");
         params.add(template);
     }
     sql.append("GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, r.rating_id, r.rating "
             + "ORDER BY COUNT(fl.user_id) DESC, f.film_id");
 
     List<Film> films = List.copyOf(findMany(sql.toString(), params.toArray()));
-    films.forEach(film -> film.setGenres(getFilmGenres(film.getId())));
+    fillGenresAndDirectors(films);
     return films;
   }
 }
