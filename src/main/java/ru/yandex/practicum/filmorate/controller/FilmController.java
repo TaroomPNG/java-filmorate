@@ -2,6 +2,8 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import java.util.Collection;
+import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -67,5 +69,11 @@ public class FilmController {
   public ResponseEntity<Collection<FilmResponse>> getFilmsByDirector(
       @PathVariable Long directorId, @RequestParam String sortBy) {
     return ResponseEntity.ok(filmService.getFilmsByDirector(directorId, sortBy));
+  }
+
+  @GetMapping("/search")
+  @ResponseStatus(HttpStatus.OK)
+  public List<FilmResponse> searchFilms(@RequestParam String query, @RequestParam String by) {
+      return filmService.searchFilms(query, by);
   }
 }

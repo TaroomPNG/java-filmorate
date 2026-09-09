@@ -53,4 +53,6 @@ public interface FilmStorage {
   List<Film> getRecommendation(Long id);
 
   void clear();
+
+  List<Film> searchFilms(String query, boolean searchByTitle, boolean searchByDirector);
 }
