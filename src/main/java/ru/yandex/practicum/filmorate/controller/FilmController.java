@@ -76,7 +76,7 @@ public class FilmController {
   public List<FilmResponse> getCommonFilms(@RequestParam long userId, @RequestParam long friendId) {
       return filmService.getCommonFilms(userId, friendId);
   }
-  
+
   @GetMapping("/search")
   @ResponseStatus(HttpStatus.OK)
   public List<FilmResponse> searchFilms(@RequestParam String query, @RequestParam String by) {
