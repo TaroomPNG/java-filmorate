@@ -40,9 +40,9 @@ public class FilmController {
     return ResponseEntity.ok(filmService.updateFilm(filmPutRequest));
   }
 
-  @DeleteMapping("/{id}")
-  public ResponseEntity<Boolean> deleteFilm(@PathVariable Long id) {
-    return ResponseEntity.status(HttpStatus.NO_CONTENT).body(filmService.deleteFilm(id));
+  @DeleteMapping("/{filmId}")
+  public ResponseEntity<Boolean> deleteFilm(@PathVariable Long filmId) {
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).body(filmService.deleteFilm(filmId));
   }
 
   // Like Mapping
