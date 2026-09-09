@@ -8,22 +8,26 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
-import ru.yandex.practicum.filmorate.controller.service.FeedService;
 import ru.yandex.practicum.filmorate.controller.service.FilmService;
+import ru.yandex.practicum.filmorate.controller.service.storage.DirectorDbStorage;
+import ru.yandex.practicum.filmorate.controller.service.FeedService;
 import ru.yandex.practicum.filmorate.controller.service.storage.FeedDbStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.FilmDbStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.ReviewDbStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.UserDbStorage;
+import ru.yandex.practicum.filmorate.controller.service.storage.mapper.DirectorRowMapper;
 import ru.yandex.practicum.filmorate.controller.service.storage.mapper.FeedRowMapper;
 import ru.yandex.practicum.filmorate.controller.service.storage.mapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.controller.service.storage.mapper.ReviewRowMapper;
 import ru.yandex.practicum.filmorate.controller.service.storage.mapper.UserRowMapper;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.dto.directorDto.DirectorPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.feedDto.FeedPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.reviewDto.ReviewPostRequest;
@@ -35,13 +39,15 @@ import ru.yandex.practicum.filmorate.model.dto.userDto.UserPostRequest;
   UserDbStorage.class,
   FilmDbStorage.class,
   ReviewDbStorage.class,
+  DirectorDbStorage.class,
   FeedDbStorage.class,
   UserRowMapper.class,
   FilmRowMapper.class,
+  ReviewRowMapper.class,
+  DirectorRowMapper.class,
   FeedRowMapper.class,
   FilmService.class,
   FeedService.class,
-  ReviewRowMapper.class
 })
 @TestPropertySource(
     properties = {
@@ -55,12 +61,14 @@ public abstract class DaoTest {
   @Autowired protected FilmDbStorage filmStorage;
   @Autowired protected FeedDbStorage feedStorage;
   @Autowired protected ReviewDbStorage reviewStorage;
+  @Autowired protected DirectorDbStorage directorStorage;
 
   @BeforeEach
   void resetData() {
     feedStorage.clear();
     reviewStorage.clear();
     filmStorage.clear();
+    directorStorage.clear();
     userStorage.clear();
   }
 
@@ -90,6 +98,12 @@ public abstract class DaoTest {
             .genres(genres)
             .mpa(mpa)
             .build());
+  }
+
+  protected Director addDirector(String name) {
+    DirectorPostRequest request = new DirectorPostRequest();
+    request.setName(name);
+    return directorStorage.addDirector(request);
   }
 
   protected Review addReview(String content, Boolean isPositive, Long userId, Long filmId) {

@@ -2,6 +2,9 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import java.util.Collection;
+import java.util.List;
+
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -75,5 +78,11 @@ public class FilmController {
   public Collection<FilmResponse> getFilmsByDirector(
       @PathVariable Long directorId, @RequestParam String sortBy) {
     return filmService.getFilmsByDirector(directorId, sortBy);
+  }
+
+  @GetMapping("/common")
+  @ResponseStatus(HttpStatus.OK)
+  public List<FilmResponse> getCommonFilms(@RequestParam long userId, @RequestParam long friendId) {
+      return filmService.getCommonFilms(userId, friendId);
   }
 }
