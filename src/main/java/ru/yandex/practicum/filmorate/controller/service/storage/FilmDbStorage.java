@@ -89,7 +89,6 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
       "MERGE INTO film_likes (user_id, film_id) KEY (user_id, film_id) VALUES (?, ?)";
   private static final String DELETE_LIKE =
       "DELETE FROM film_likes WHERE film_id = ? AND user_id = ?";
-  
   private static final String FIND_LIKES_BY_FILM =
       "SELECT u.* FROM \"user\" AS u "
           + "JOIN film_likes AS fl ON u.user_id = fl.user_id WHERE fl.film_id = ?";
