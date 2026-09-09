@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller.service.storage;
 
 import java.util.List;
 import java.util.Set;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
@@ -25,6 +26,10 @@ public interface FilmStorage {
 
   List<Genre> getGenres();
 
+  List<Film> getFilmsByDirector(long directorId, String sortBy);
+
+  Set<Director> getFilmDirectors(long id);
+
   Genre getGenreById(long id);
 
   List<Rating> getRatings();
@@ -39,7 +44,11 @@ public interface FilmStorage {
 
   void removeLike(long filmId, long userId);
 
-  List<Film> getPopular(int count);
+  List<Film> getPopular(int count, Integer genreId, Integer year);
+
+  default List<Film> getPopular(int count) {
+    return getPopular(count, null, null);
+  }
 
   void clear();
 

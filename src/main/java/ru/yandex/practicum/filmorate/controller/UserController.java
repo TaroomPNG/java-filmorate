@@ -2,10 +2,14 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import java.util.Collection;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.controller.service.FeedService;
 import ru.yandex.practicum.filmorate.controller.service.UserService;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.dto.feedDto.FeedResponse;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserPutRequest;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserResponse;
@@ -16,6 +20,7 @@ import ru.yandex.practicum.filmorate.model.dto.userDto.UserResponse;
 public class UserController {
 
   private final UserService userService;
+  private final FeedService feedService;
 
   @GetMapping
   @ResponseStatus(HttpStatus.OK)
@@ -72,5 +77,17 @@ public class UserController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public UserResponse deleteFriend(@PathVariable Long id, @PathVariable Long friendId) {
     return userService.deleteFriend(id, friendId);
+  }
+
+  @GetMapping("/{id}/feed")
+  @ResponseStatus(HttpStatus.OK)
+  public List<FeedResponse> getFeedByUser(@PathVariable Long id) {
+    return feedService.getFeedByUser(id);
+  }
+
+  @GetMapping("/{id}/feed/{type}")
+  @ResponseStatus(HttpStatus.OK)
+  public List<FeedResponse> getFeedByType(@PathVariable Long id, @PathVariable EventType type) {
+    return feedService.getFeedByEvent(id, type);
   }
 }

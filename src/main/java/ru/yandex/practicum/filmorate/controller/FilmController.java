@@ -18,7 +18,7 @@ import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmResponse;
 @RequiredArgsConstructor
 public class FilmController {
 
-  @Getter private final FilmService filmService;
+  private final FilmService filmService;
 
   @GetMapping
   @ResponseStatus(HttpStatus.OK)
@@ -67,10 +67,18 @@ public class FilmController {
   @GetMapping("/popular")
   @ResponseStatus(HttpStatus.OK)
   public Collection<FilmResponse> getPopularFilms(
-      @RequestParam(required = false, defaultValue = "10") int count) {
-    return filmService.getTopFilms(count);
+      @RequestParam(required = false, defaultValue = "10") int count,
+      @RequestParam(required = false) Integer genreId,
+      @RequestParam(required = false) Integer year) {
+    return filmService.getTopFilms(count, genreId, year);
   }
 
+  @GetMapping("/director/{directorId}")
+  @ResponseStatus(HttpStatus.OK)
+  public Collection<FilmResponse> getFilmsByDirector(
+      @PathVariable Long directorId, @RequestParam String sortBy) {
+    return filmService.getFilmsByDirector(directorId, sortBy);
+  }
   @GetMapping("/common")
   @ResponseStatus(HttpStatus.OK)
   public List<FilmResponse> getCommonFilms(@RequestParam long userId, @RequestParam long friendId) {
