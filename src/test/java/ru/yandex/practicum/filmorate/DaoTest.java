@@ -47,8 +47,7 @@ import ru.yandex.practicum.filmorate.model.dto.userDto.UserPostRequest;
   DirectorRowMapper.class,
   FeedRowMapper.class,
   FilmService.class,
-  FeedService.class,
-  ReviewRowMapper.class
+  FeedService.class
 })
 @TestPropertySource(
     properties = {
