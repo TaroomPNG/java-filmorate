@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.controller.service.storage;
 
 import java.util.*;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -10,6 +12,11 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.controller.exceptions.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.controller.exceptions.FilmNotFound;
 import ru.yandex.practicum.filmorate.controller.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.controller.service.storage.mapper.FilmRowMapper;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Rating;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmPutRequest;
@@ -88,19 +95,26 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
       "SELECT u.* FROM \"user\" AS u "
           + "JOIN film_likes AS fl ON u.user_id = fl.user_id WHERE fl.film_id = ?";
 
-    private static final String GET_RECOMMENDATION_FILMS =
-            FILM_SELECT + " JOIN film_likes AS fl ON f.film_id = fl.film_id " +
-                    "WHERE fl.user_id IN (SELECT fl2.user_id FROM film_likes AS fl1 " +
-                    "JOIN film_likes AS fl2 ON fl1.film_id = fl2.film_id AND fl1.user_id != fl2.user_id " +
-                    "WHERE fl1.user_id = ? " +
-                    "GROUP BY fl2.user_id " +
-                    "ORDER BY COUNT(fl2.film_id) DESC, fl2.user_id " +
-                    "LIMIT 1) " +
-                    "AND fl.film_id NOT IN (SELECT film_id FROM film_likes WHERE user_id = ?)";
+  private static final String FIND_COMMON_FILMS =
+      FILM_SELECT
+          + " INNER JOIN film_likes AS fl1 ON f.film_id = fl1.film_id "
+          + "INNER JOIN film_likes AS fl2 ON f.film_id = fl2.film_id "
+          + "LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id "
+          + "WHERE fl1.user_id = ? AND fl2.user_id = ? "
+          + "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, r.rating_id, r.rating "
+          + "ORDER BY COUNT(fl.user_id) DESC, f.film_id;";
 
+  private static final String GET_RECOMMENDATION_FILMS =
+      FILM_SELECT + " JOIN film_likes AS fl ON f.film_id = fl.film_id " +
+            "WHERE fl.user_id IN (SELECT fl2.user_id FROM film_likes AS fl1 " +
+            "JOIN film_likes AS fl2 ON fl1.film_id = fl2.film_id AND fl1.user_id != fl2.user_id " +
+            "WHERE fl1.user_id = ? " +
+            "GROUP BY fl2.user_id " +
+            "ORDER BY COUNT(fl2.film_id) DESC, fl2.user_id " +
+            "LIMIT 1) " +
+            "AND fl.film_id NOT IN (SELECT film_id FROM film_likes WHERE user_id = ?)";
 
-
-    private final RowMapper<Genre> genreMapper =
+  private final RowMapper<Genre> genreMapper = 
       (rs, rowNum) -> new Genre(rs.getInt("genre_id"), rs.getString("genre"));
   private final RowMapper<Rating> ratingMapper =
       (rs, rowNum) -> new Rating(rs.getInt("rating_id"), rs.getString("rating"));
@@ -423,5 +437,16 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     List<Object[]> params =
         uniqueIds.stream().map(genreId -> new Object[] {filmId, genreId}).toList();
     jdbc.batchUpdate(ADD_FILM_TO_GENRES, params);
+  }
+
+  @Override
+  public List<Film> getCommonFilms(long userId, long friendId) {
+    List<Film> films = jdbc.query(FIND_COMMON_FILMS, new FilmRowMapper(), userId, friendId);
+      if (films.isEmpty()) {
+          return films;
+      }
+
+      fillGenresAndDirectors(films);
+      return films;
   }
 }
