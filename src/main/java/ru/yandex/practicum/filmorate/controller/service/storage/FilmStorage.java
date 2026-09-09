@@ -50,6 +50,8 @@ public interface FilmStorage {
     return getPopular(count, null, null);
   }
 
+  List<Film> getRecommendation(Long id);
+
   void clear();
 
   List<Film> searchFilms(String query, boolean searchByTitle, boolean searchByDirector);

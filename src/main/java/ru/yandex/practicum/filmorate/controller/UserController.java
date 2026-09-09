@@ -5,11 +5,13 @@ import java.util.Collection;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.controller.service.FeedService;
 import ru.yandex.practicum.filmorate.controller.service.UserService;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.dto.feedDto.FeedResponse;
+import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmResponse;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserPutRequest;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserResponse;
@@ -23,71 +25,70 @@ public class UserController {
   private final FeedService feedService;
 
   @GetMapping
-  @ResponseStatus(HttpStatus.OK)
-  public Collection<UserResponse> getAllUsers() {
-    return userService.getAllUsers();
+  public ResponseEntity<Collection<UserResponse>> getAllUsers() {
+    return ResponseEntity.ok(userService.getAllUsers());
   }
 
   @GetMapping("/{id}")
-  @ResponseStatus(HttpStatus.OK)
-  public UserResponse getUserById(@PathVariable Long id) {
-    return userService.getUserById(id);
+  public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
+    return ResponseEntity.ok(userService.getUserById(id));
   }
 
   @PostMapping
-  @ResponseStatus(HttpStatus.CREATED)
-  public UserResponse addUser(@Valid @RequestBody UserPostRequest userPostRequest) {
-    return userService.addUser(userPostRequest);
+  public ResponseEntity<UserResponse> addUser(@Valid @RequestBody UserPostRequest userPostRequest) {
+    return ResponseEntity.status(HttpStatus.CREATED).body(userService.addUser(userPostRequest));
   }
 
   @PutMapping
-  @ResponseStatus(HttpStatus.OK)
-  public UserResponse updateUser(@Valid @RequestBody UserPutRequest userPutRequest) {
-    return userService.updateUser(userPutRequest);
+  public ResponseEntity<UserResponse> updateUser(@Valid @RequestBody UserPutRequest userPutRequest) {
+    return ResponseEntity.ok(userService.updateUser(userPutRequest));
+  }
+
+  @DeleteMapping("/{userId}")
+  public ResponseEntity<Boolean> deleteUser(@PathVariable Long userId) {
+      return ResponseEntity.status(HttpStatus.NO_CONTENT).body(userService.deleteUser(userId));
   }
 
   // FriendMapping
 
   @GetMapping("/{id}/friends")
-  @ResponseStatus(HttpStatus.OK)
-  public Collection<UserResponse> getAllUserFriends(@PathVariable Long id) {
-    return userService.getAllFriends(id);
+  public ResponseEntity<Collection<UserResponse>> getAllUserFriends(@PathVariable Long id) {
+    return ResponseEntity.ok(userService.getAllFriends(id));
   }
 
   @GetMapping("/{id}/friends/requests")
-  @ResponseStatus(HttpStatus.OK)
-  public Collection<UserResponse> getAllUserFriendsRequests(@PathVariable Long id) {
-    return userService.getAllFriendsRequest(id);
+  public ResponseEntity<Collection<UserResponse>> getAllUserFriendsRequests(@PathVariable Long id) {
+    return ResponseEntity.ok(userService.getAllFriendsRequest(id));
   }
 
   @GetMapping("/{id}/friends/common/{otherId}")
-  @ResponseStatus(HttpStatus.OK)
-  public Collection<UserResponse> getCommonFriends(
+  public ResponseEntity<Collection<UserResponse>> getCommonFriends(
       @PathVariable Long id, @PathVariable Long otherId) {
-    return userService.getCommonFriends(id, otherId);
+    return ResponseEntity.ok(userService.getCommonFriends(id, otherId));
   }
 
   @PutMapping("/{id}/friends/{friendId}")
-  @ResponseStatus(HttpStatus.OK)
-  public UserResponse addFriend(@PathVariable Long id, @PathVariable Long friendId) {
-    return userService.addFriend(id, friendId);
+  public ResponseEntity<UserResponse> addFriend(@PathVariable Long id, @PathVariable Long friendId) {
+    return ResponseEntity.ok(userService.addFriend(id, friendId));
   }
 
   @DeleteMapping("/{id}/friends/{friendId}")
-  @ResponseStatus(HttpStatus.NO_CONTENT)
-  public UserResponse deleteFriend(@PathVariable Long id, @PathVariable Long friendId) {
-    return userService.deleteFriend(id, friendId);
+  public ResponseEntity<UserResponse> deleteFriend(@PathVariable Long id, @PathVariable Long friendId) {
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).body(userService.deleteFriend(id, friendId));
   }
 
   @GetMapping("/{id}/feed")
-  @ResponseStatus(HttpStatus.OK)
-  public List<FeedResponse> getFeedByUser(@PathVariable Long id) {
-    return feedService.getFeedByUser(id);
+  public ResponseEntity<List<FeedResponse>> getFeedByUser(@PathVariable Long id) {
+    return ResponseEntity.ok(feedService.getFeedByUser(id));
   }
 
   @GetMapping("/{id}/feed/{type}")
-  @ResponseStatus(HttpStatus.OK)
-  public List<FeedResponse> getFeedByType(@PathVariable Long id, @PathVariable EventType type) {
-    return feedService.getFeedByEvent(id, type);
+  public ResponseEntity<List<FeedResponse>> getFeedByType(@PathVariable Long id, @PathVariable EventType type) {
+    return ResponseEntity.ok(feedService.getFeedByEvent(id, type));
+  }
+
+  @GetMapping("/{id}/recommendations")
+  public ResponseEntity<Collection<FilmResponse>> getRecommendations(@PathVariable Long id) {
+    return ResponseEntity.ok(userService.getRecommendations(id));
   }
 }

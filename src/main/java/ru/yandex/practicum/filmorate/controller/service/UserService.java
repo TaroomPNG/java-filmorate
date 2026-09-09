@@ -7,11 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controller.exceptions.UserNotFound;
+import ru.yandex.practicum.filmorate.controller.service.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.UserStorage;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.dto.feedDto.FeedPostRequest;
+import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmResponse;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserPutRequest;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserResponse;
@@ -23,6 +25,10 @@ public class UserService {
   @Autowired
   @Qualifier("UserDbStorage")
   UserStorage userStorage;
+
+    @Autowired
+    @Qualifier("FilmDbStorage")
+    FilmStorage filmStorage;
 
   @Autowired private FeedService feedService;
 
@@ -106,5 +112,14 @@ public class UserService {
     log.trace("Запрос UserResponse через deleteUser");
     reviewStorage.deleteByUserId(id);
     return userStorage.deleteUser(id);
+  }
+
+  public List<FilmResponse> getRecommendations(Long id) {
+    if (!userStorage.isUserExists(id)) {
+        throw new UserNotFound(id);
+    }
+    return filmStorage.getRecommendation(id).stream()
+                .map(FilmResponse::new)
+                .toList();
   }
 }
