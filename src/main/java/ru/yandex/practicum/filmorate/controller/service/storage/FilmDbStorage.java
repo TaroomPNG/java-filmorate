@@ -88,7 +88,19 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
       "SELECT u.* FROM \"user\" AS u "
           + "JOIN film_likes AS fl ON u.user_id = fl.user_id WHERE fl.film_id = ?";
 
-  private final RowMapper<Genre> genreMapper =
+    private static final String GET_RECOMMENDATION_FILMS =
+            FILM_SELECT + " JOIN film_likes AS fl ON f.film_id = fl.film_id " +
+                    "WHERE fl.user_id IN (SELECT fl2.user_id FROM film_likes AS fl1 " +
+                    "JOIN film_likes AS fl2 ON fl1.film_id = fl2.film_id AND fl1.user_id != fl2.user_id " +
+                    "WHERE fl1.user_id = ? " +
+                    "GROUP BY fl2.user_id " +
+                    "ORDER BY COUNT(fl2.film_id) DESC, fl2.user_id " +
+                    "LIMIT 1) " +
+                    "AND fl.film_id NOT IN (SELECT film_id FROM film_likes WHERE user_id = ?)";
+
+
+
+    private final RowMapper<Genre> genreMapper =
       (rs, rowNum) -> new Genre(rs.getInt("genre_id"), rs.getString("genre"));
   private final RowMapper<Rating> ratingMapper =
       (rs, rowNum) -> new Rating(rs.getInt("rating_id"), rs.getString("rating"));
@@ -327,6 +339,17 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     List<Film> films = List.copyOf(findMany(query, directorId));
     fillGenresAndDirectors(films);
     return films;
+  }
+
+  @Override
+  public List<Film> getRecommendation(Long id) {
+      try {
+          List<Film> recFilms = jdbc.query(GET_RECOMMENDATION_FILMS, mapper, id, id);
+          fillGenresAndDirectors(recFilms);
+          return recFilms;
+      } catch (EmptyResultDataAccessException e) {
+          throw new NotFoundException("Пользователь с id " + id + " не найден");
+      }
   }
 
   private void fillGenresAndDirectors(List<Film> films) {
