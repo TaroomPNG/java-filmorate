@@ -8,8 +8,8 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.controller.exceptions.ConditionsNotMetException;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.controller.exceptions.FilmNotFound;
 import ru.yandex.practicum.filmorate.controller.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.controller.service.storage.mapper.FilmRowMapper;
@@ -103,6 +103,12 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
           + "WHERE fl1.user_id = ? AND fl2.user_id = ? "
           + "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, r.rating_id, r.rating "
           + "ORDER BY COUNT(fl.user_id) DESC, f.film_id;";
+  
+  private static final String SEARCH_FILMS =
+      FILM_SELECT
+          + " LEFT JOIN film_to_directors AS ftd ON f.film_id = ftd.film_id "
+          + "LEFT JOIN director AS d ON ftd.director_id = d.director_id "
+          + "LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id ";
 
   private static final String GET_RECOMMENDATION_FILMS =
       FILM_SELECT + " JOIN film_likes AS fl ON f.film_id = fl.film_id " +
@@ -113,8 +119,8 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             "ORDER BY COUNT(fl2.film_id) DESC, fl2.user_id " +
             "LIMIT 1) " +
             "AND fl.film_id NOT IN (SELECT film_id FROM film_likes WHERE user_id = ?)";
-
-  private final RowMapper<Genre> genreMapper = 
+  
+  private final RowMapper<Genre> genreMapper =
       (rs, rowNum) -> new Genre(rs.getInt("genre_id"), rs.getString("genre"));
   private final RowMapper<Rating> ratingMapper =
       (rs, rowNum) -> new Rating(rs.getInt("rating_id"), rs.getString("rating"));
@@ -448,5 +454,35 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
       fillGenresAndDirectors(films);
       return films;
+  }
+  
+  @Override
+  public List<Film> searchFilms(String query, boolean searchByTitle, boolean searchByDirector) {
+    String template = "%" + query.trim() + "%";
+
+    StringBuilder sql = new StringBuilder(SEARCH_FILMS);
+    List<Object> params = new ArrayList<>();
+    boolean hasCondition = false;
+
+    if (searchByTitle) {
+        sql.append("WHERE LOWER(f.name) LIKE LOWER(?) ");
+        params.add(template);
+        hasCondition = true;
+    }
+    if (searchByDirector) {
+        if (hasCondition) {
+            sql.append("OR ");
+        } else {
+            sql.append("WHERE ");
+        }
+        sql.append("LOWER(d.name) LIKE LOWER(?) ");
+        params.add(template);
+    }
+    sql.append("GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, r.rating_id, r.rating "
+            + "ORDER BY COUNT(DISTINCT fl.user_id) DESC, f.film_id");
+
+    List<Film> films = List.copyOf(findMany(sql.toString(), params.toArray()));
+    fillGenresAndDirectors(films);
+    return films;
   }
 }
