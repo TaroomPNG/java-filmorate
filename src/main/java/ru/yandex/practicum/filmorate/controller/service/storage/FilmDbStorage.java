@@ -92,7 +92,6 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
   private static final String FIND_LIKES_BY_FILM =
       "SELECT u.* FROM \"user\" AS u "
           + "JOIN film_likes AS fl ON u.user_id = fl.user_id WHERE fl.film_id = ?";
-  
   private static final String FIND_COMMON_FILMS =
       FILM_SELECT
           + " INNER JOIN film_likes AS fl1 ON f.film_id = fl1.film_id "
@@ -101,13 +100,11 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
           + "WHERE fl1.user_id = ? AND fl2.user_id = ? "
           + "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, r.rating_id, r.rating "
           + "ORDER BY COUNT(fl.user_id) DESC, f.film_id;";
-  
   private static final String SEARCH_FILMS =
       FILM_SELECT
           + " LEFT JOIN film_to_directors AS ftd ON f.film_id = ftd.film_id "
           + "LEFT JOIN director AS d ON ftd.director_id = d.director_id "
           + "LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id ";
-  
   private static final String GET_RECOMMENDATION_FILMS =
       FILM_SELECT + " JOIN film_likes AS fl ON f.film_id = fl.film_id " +
             "WHERE fl.user_id IN (SELECT fl2.user_id FROM film_likes AS fl1 " +
