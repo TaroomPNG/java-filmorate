@@ -435,7 +435,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         params.add(template);
     }
     sql.append("GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, r.rating_id, r.rating "
-            + "ORDER BY COUNT(fl.user_id) DESC, f.film_id");
+            + "ORDER BY COUNT(DISTINCT fl.user_id) DESC, f.film_id");
 
     List<Film> films = List.copyOf(findMany(sql.toString(), params.toArray()));
     fillGenresAndDirectors(films);
