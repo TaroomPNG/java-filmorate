@@ -26,6 +26,7 @@ public class FilmCommonFilmsTest extends DaoTest {
     private Long user1Id;
     private Long user2Id;
     private Long user3Id;
+    private Long film1Id;
 
     @BeforeEach
     void setUp() {
@@ -42,6 +43,8 @@ public class FilmCommonFilmsTest extends DaoTest {
         Film film2 = addFilm("Начало", Set.of(Genre.ACTION_MOVIE, Genre.THRILLER), Rating.PG_13);
         Film film3 = addFilm("Путешествие сквозь вселенную", Set.of(Genre.DOCUMENTARY), Rating.PG);
 
+        film1Id = film1.getId();
+
         filmStorage.addLike(film1.getId(), user1Id);
         filmStorage.addLike(film2.getId(), user2Id);
         filmStorage.addLike(film3.getId(), user3Id);
@@ -57,7 +60,9 @@ public class FilmCommonFilmsTest extends DaoTest {
     @Test
     void getCommonFilms_ShouldReturnCommonFilms() {
         List<FilmResponse> result = filmService.getCommonFilms(user1Id, user2Id);
-        assertThat(result).hasSize(1);
+        assertThat(result).hasSize(1)
+                .extracting(FilmResponse::getId)
+                .containsExactly(film1Id);
     }
 
     @Test
