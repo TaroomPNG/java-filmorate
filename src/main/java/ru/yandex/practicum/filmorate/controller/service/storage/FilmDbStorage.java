@@ -114,7 +114,6 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             "ORDER BY COUNT(fl2.film_id) DESC, fl2.user_id " +
             "LIMIT 1) " +
             "AND fl.film_id NOT IN (SELECT film_id FROM film_likes WHERE user_id = ?)";
-  
   private final RowMapper<Genre> genreMapper =
       (rs, rowNum) -> new Genre(rs.getInt("genre_id"), rs.getString("genre"));
   private final RowMapper<Rating> ratingMapper =
