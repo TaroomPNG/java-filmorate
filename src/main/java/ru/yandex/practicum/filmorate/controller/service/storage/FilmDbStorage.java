@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.controller.service.storage;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -90,11 +89,11 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
       "MERGE INTO film_likes (user_id, film_id) KEY (user_id, film_id) VALUES (?, ?)";
   private static final String DELETE_LIKE =
       "DELETE FROM film_likes WHERE film_id = ? AND user_id = ?";
-
+  
   private static final String FIND_LIKES_BY_FILM =
       "SELECT u.* FROM \"user\" AS u "
           + "JOIN film_likes AS fl ON u.user_id = fl.user_id WHERE fl.film_id = ?";
-
+  
   private static final String FIND_COMMON_FILMS =
       FILM_SELECT
           + " INNER JOIN film_likes AS fl1 ON f.film_id = fl1.film_id "
@@ -109,7 +108,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
           + " LEFT JOIN film_to_directors AS ftd ON f.film_id = ftd.film_id "
           + "LEFT JOIN director AS d ON ftd.director_id = d.director_id "
           + "LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id ";
-
+  
   private static final String GET_RECOMMENDATION_FILMS =
       FILM_SELECT + " JOIN film_likes AS fl ON f.film_id = fl.film_id " +
             "WHERE fl.user_id IN (SELECT fl2.user_id FROM film_likes AS fl1 " +
@@ -455,7 +454,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
       fillGenresAndDirectors(films);
       return films;
   }
-  
+
   @Override
   public List<Film> searchFilms(String query, boolean searchByTitle, boolean searchByDirector) {
     String template = "%" + query.trim() + "%";
