@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.controller.service.storage;
 
 import java.util.*;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -419,7 +421,19 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
   @Override
   public List<Film> getCommonFilms(long userId, long friendId) {
     List<Film> films = jdbc.query(FIND_COMMON_FILMS, new FilmRowMapper(), userId, friendId);
-      films.forEach(film -> film.setGenres(getFilmGenres(film.getId())));
+      if (films.isEmpty()) {
+          return films;
+      }
+
+      List<Long> filmIds = films.stream()
+              .map(Film::getId)
+              .collect(Collectors.toList());
+
+      Map<Long, Set<Genre>> genresByFilmId = getGenresByFilmIds(filmIds);
+      for (Film film : films) {
+          film.setGenres(genresByFilmId.getOrDefault(film.getId(), new LinkedHashSet<>()));
+      }
+
       return films;
   }
 }
