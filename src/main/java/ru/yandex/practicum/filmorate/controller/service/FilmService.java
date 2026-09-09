@@ -206,7 +206,7 @@ public class FilmService {
       }
     return filmStorage.getCommonFilms(userId, friendId).stream().map(FilmResponse::new).toList();
   }
-  
+
   public List<FilmResponse> searchFilms(String query, String by) {
       if (query == null || query.isBlank()) {
           throw new ConditionsNotMetException("Query не может быть пустым");
