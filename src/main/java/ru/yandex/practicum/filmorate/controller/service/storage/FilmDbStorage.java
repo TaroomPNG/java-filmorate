@@ -446,15 +446,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
           return films;
       }
 
-      List<Long> filmIds = films.stream()
-              .map(Film::getId)
-              .collect(Collectors.toList());
-
-      Map<Long, Set<Genre>> genresByFilmId = getGenresByFilmIds(filmIds);
-      for (Film film : films) {
-          film.setGenres(genresByFilmId.getOrDefault(film.getId(), new LinkedHashSet<>()));
-      }
-
+      fillGenresAndDirectors(films);
       return films;
   }
 }
