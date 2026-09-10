@@ -1,22 +1,21 @@
 package ru.yandex.practicum.filmorate.controller.service.storage;
 
 import java.util.*;
-
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.controller.exceptions.ConditionsNotMetException;
 import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.filmorate.controller.exceptions.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.controller.exceptions.FilmNotFound;
 import ru.yandex.practicum.filmorate.controller.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.controller.service.storage.mapper.FilmRowMapper;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmPutRequest;
 
@@ -199,10 +198,8 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
       saveGenres(filmPutRequest.getId(), filmPutRequest.getGenres());
     }
 
-    if (filmPutRequest.getDirectors() != null) {
-      jdbc.update(DELETE_FILM_DIRECTORS, filmPutRequest.getId());
-      saveDirectors(filmPutRequest.getId(), filmPutRequest.getDirectors());
-    }
+    jdbc.update(DELETE_FILM_DIRECTORS, filmPutRequest.getId());
+    saveDirectors(filmPutRequest.getId(), filmPutRequest.getDirectors());
 
     return getFilmById(filmPutRequest.getId());
   }
