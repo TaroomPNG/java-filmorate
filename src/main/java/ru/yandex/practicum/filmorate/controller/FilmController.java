@@ -72,14 +72,12 @@ public class FilmController {
   }
 
   @GetMapping("/common")
-  @ResponseStatus(HttpStatus.OK)
-  public List<FilmResponse> getCommonFilms(@RequestParam long userId, @RequestParam long friendId) {
-      return filmService.getCommonFilms(userId, friendId);
+  public ResponseEntity<List<FilmResponse>> getCommonFilms(@RequestParam long userId, @RequestParam long friendId) {
+      return ResponseEntity.ok(filmService.getCommonFilms(userId, friendId));
   }
 
   @GetMapping("/search")
-  @ResponseStatus(HttpStatus.OK)
-  public List<FilmResponse> searchFilms(@RequestParam String query, @RequestParam String by) {
-      return filmService.searchFilms(query, by);
+  public ResponseEntity<List<FilmResponse>> searchFilms(@RequestParam String query, @RequestParam String by) {
+      return ResponseEntity.ok(filmService.searchFilms(query, by));
   }
 }
