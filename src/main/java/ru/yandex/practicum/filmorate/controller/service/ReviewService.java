@@ -60,12 +60,6 @@ public class ReviewService {
     if (reviewPutRequest.getContent() != null) {
       validateReviewContent(reviewPutRequest.getContent());
     }
-    if (reviewPutRequest.getUserId() != null) {
-      validateUser(reviewPutRequest.getUserId());
-    }
-    if (reviewPutRequest.getFilmId() != null) {
-      validateFilm(reviewPutRequest.getFilmId());
-    }
 
     ReviewResponse updated = new ReviewResponse(reviewStorage.updateReview(reviewPutRequest));
     feedService.addToFeed(

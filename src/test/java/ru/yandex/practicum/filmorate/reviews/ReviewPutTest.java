@@ -36,8 +36,8 @@ class ReviewPutTest extends DaoTest {
   }
 
   @Test
-  @DisplayName("Должен обновлять автора и фильм у отзыва")
-  void shouldUpdateReviewUserAndFilm() {
+  @DisplayName("Не должен менять автора, фильм и полезность при обновлении только отзыва")
+  void shouldIgnoreUserFilmAndUsefulOnUpdate() {
     User firstUser = addUser("first@test.ru", "first");
     User secondUser = addUser("second@test.ru", "second");
     Film firstFilm = addFilm("firstFilm");
@@ -48,12 +48,18 @@ class ReviewPutTest extends DaoTest {
         reviewStorage.updateReview(
             ReviewPutRequest.builder()
                 .reviewId(created.getId())
+                .content("updated")
+                .isPositive(false)
                 .userId(secondUser.getId())
                 .filmId(secondFilm.getId())
+                .useful(10)
                 .build());
 
     assertThat(updated)
-        .hasFieldOrPropertyWithValue("userId", secondUser.getId())
-        .hasFieldOrPropertyWithValue("filmId", secondFilm.getId());
+        .hasFieldOrPropertyWithValue("content", "updated")
+        .hasFieldOrPropertyWithValue("isPositive", false)
+        .hasFieldOrPropertyWithValue("userId", firstUser.getId())
+        .hasFieldOrPropertyWithValue("filmId", firstFilm.getId())
+        .hasFieldOrPropertyWithValue("useful", 0);
   }
 }
