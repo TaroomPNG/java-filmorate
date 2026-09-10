@@ -54,5 +54,7 @@ public interface FilmStorage {
 
   void clear();
 
+  List<Film> getCommonFilms(long userId1, long userId2);
+
   List<Film> searchFilms(String query, boolean searchByTitle, boolean searchByDirector);
 }

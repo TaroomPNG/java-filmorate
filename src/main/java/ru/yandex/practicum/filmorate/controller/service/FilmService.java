@@ -191,36 +191,52 @@ public class FilmService {
     }
   }
 
-    public List<FilmResponse> searchFilms(String query, String by) {
-        if (query == null || query.isBlank()) {
-            throw new ConditionsNotMetException("Query не может быть пустым");
-        }
-        if (by == null || by.isBlank()) {
-            throw new ConditionsNotMetException("By не может быть пустым");
-        }
+  public List<FilmResponse> getCommonFilms(long userId, long friendId) {
+      if (userId <= 0 || friendId <= 0) {
+          throw new ConditionsNotMetException("ID пользователя должен быть положительным числом");
+      }
+      if (userId == friendId) {
+          throw new ConditionsNotMetException("Пользователи должны быть разные");
+      }
+      if (!userStorage.isUserExists(userId)) {
+          throw new UserNotFound(userId);
+      }
+      if (!userStorage.isUserExists(friendId)) {
+          throw new UserNotFound(friendId);
+      }
+    return filmStorage.getCommonFilms(userId, friendId).stream().map(FilmResponse::new).toList();
+  }
 
-        String[] byParams = by.toLowerCase().trim().split(",");
+  public List<FilmResponse> searchFilms(String query, String by) {
+      if (query == null || query.isBlank()) {
+          throw new ConditionsNotMetException("Query не может быть пустым");
+      }
+      if (by == null || by.isBlank()) {
+          throw new ConditionsNotMetException("By не может быть пустым");
+      }
 
-        boolean searchByTitle = false;
-        boolean searchByDirector = false;
+      String[] byParams = by.toLowerCase().trim().split(",");
 
-        for (String patameter : byParams) {
-            String correctBy = patameter.trim();
+      boolean searchByTitle = false;
+      boolean searchByDirector = false;
 
-            if (!ALLOWED_SEARCH_BY.contains(correctBy)) {
-                throw new ConditionsNotMetException("Некорректное значение by! Должен быть 'title' или 'director'");
-            }
+      for (String patameter : byParams) {
+          String correctBy = patameter.trim();
 
-            if ("title".equals(correctBy)) {
-                searchByTitle = true;
-            } else if ("director".equals(correctBy)) {
-                searchByDirector = true;
-            }
-        }
+          if (!ALLOWED_SEARCH_BY.contains(correctBy)) {
+              throw new ConditionsNotMetException("Некорректное значение by! Должен быть 'title' или 'director'");
+          }
 
-        return filmStorage.searchFilms(query, searchByTitle, searchByDirector)
-                .stream()
-                .map(FilmResponse::new)
-                .toList();
+          if ("title".equals(correctBy)) {
+              searchByTitle = true;
+          } else if ("director".equals(correctBy)) {
+              searchByDirector = true;
+          }
+      }
+
+      return filmStorage.searchFilms(query, searchByTitle, searchByDirector)
+              .stream()
+              .map(FilmResponse::new)
+              .toList();
     }
 }
