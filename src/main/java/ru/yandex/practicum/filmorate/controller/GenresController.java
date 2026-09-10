@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import java.util.Collection;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.controller.service.FilmService;
 import ru.yandex.practicum.filmorate.model.dto.genreDto.GenreResponse;
@@ -14,14 +14,12 @@ public class GenresController {
   private final FilmService filmService;
 
   @GetMapping
-  @ResponseStatus(HttpStatus.OK)
-  public Collection<GenreResponse> getGenres() {
-    return filmService.getGenres();
+  public ResponseEntity<Collection<GenreResponse>> getGenres() {
+    return ResponseEntity.ok(filmService.getGenres());
   }
 
   @GetMapping("/{id}")
-  @ResponseStatus(HttpStatus.OK)
-  public GenreResponse getGenreById(@PathVariable long id) {
-    return filmService.getGenreById(id);
+  public ResponseEntity<GenreResponse> getGenreById(@PathVariable long id) {
+    return ResponseEntity.ok(filmService.getGenreById(id));
   }
 }

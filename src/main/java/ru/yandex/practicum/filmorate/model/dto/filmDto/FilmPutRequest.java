@@ -10,6 +10,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import lombok.Builder;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
 
@@ -38,4 +39,8 @@ public class FilmPutRequest {
   private Set<Genre> genres = null;
 
   @Builder.Default private Rating mpa = null;
+
+  @JsonDeserialize(as = LinkedHashSet.class)
+  @Builder.Default
+  private Set<Director> directors = null;
 }

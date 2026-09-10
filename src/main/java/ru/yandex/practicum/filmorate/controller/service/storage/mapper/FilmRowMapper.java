@@ -20,6 +20,7 @@ public class FilmRowMapper implements RowMapper<Film> {
         rs.getDate("release_date").toLocalDate(),
         rs.getInt("duration"),
         new LinkedHashSet<>(),
-        new Rating(rs.getInt("rating_id"), rs.getString("rating")));
+        new Rating(rs.getInt("rating_id"), rs.getString("rating")),
+        new LinkedHashSet<>());
   }
 }

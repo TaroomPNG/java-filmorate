@@ -7,7 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.controller.exceptions.UserNotFound;
+import ru.yandex.practicum.filmorate.controller.service.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.controller.service.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.UserStorage;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Operation;
+import ru.yandex.practicum.filmorate.model.dto.feedDto.FeedPostRequest;
+import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmResponse;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserPutRequest;
 import ru.yandex.practicum.filmorate.model.dto.userDto.UserResponse;
@@ -20,6 +26,16 @@ public class UserService {
   @Qualifier("UserDbStorage")
   UserStorage userStorage;
 
+    @Autowired
+    @Qualifier("FilmDbStorage")
+    FilmStorage filmStorage;
+
+  @Autowired private FeedService feedService;
+
+  @Autowired
+  @Qualifier("ReviewDbStorage")
+  ReviewStorage reviewStorage;
+
   public UserResponse addFriend(Long userId, Long friendId) {
     log.trace("Вызывается addFriend: UserID {} - FriendID {}", userId, friendId);
     if (!userStorage.isUserExists(userId)) {
@@ -29,6 +45,8 @@ public class UserService {
       throw new UserNotFound(friendId);
     }
     userStorage.addFriend(userId, friendId);
+    feedService.addToFeed(new FeedPostRequest(userId, EventType.FRIEND, Operation.ADD, friendId));
+
     return new UserResponse(userStorage.getUserById(userId));
   }
 
@@ -41,6 +59,9 @@ public class UserService {
       throw new UserNotFound(friendId);
     }
     userStorage.removeFriend(userId, friendId);
+    feedService.addToFeed(
+        new FeedPostRequest(userId, EventType.FRIEND, Operation.REMOVE, friendId));
+
     return new UserResponse(userStorage.getUserById(userId));
   }
 
@@ -85,5 +106,20 @@ public class UserService {
   public UserResponse updateUser(UserPutRequest userPutRequest) {
     log.trace("Запрос UserResponse через updateUser");
     return new UserResponse(userStorage.updateUser(userPutRequest));
+  }
+
+  public boolean deleteUser(Long id) {
+    log.trace("Запрос UserResponse через deleteUser");
+    reviewStorage.deleteByUserId(id);
+    return userStorage.deleteUser(id);
+  }
+
+  public List<FilmResponse> getRecommendations(Long id) {
+    if (!userStorage.isUserExists(id)) {
+        throw new UserNotFound(id);
+    }
+    return filmStorage.getRecommendation(id).stream()
+                .map(FilmResponse::new)
+                .toList();
   }
 }

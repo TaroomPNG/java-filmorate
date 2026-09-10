@@ -3,18 +3,22 @@ package ru.yandex.practicum.filmorate.controller.service;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.controller.exceptions.ConditionsNotMetException;
-import ru.yandex.practicum.filmorate.controller.exceptions.FilmNotFound;
-import ru.yandex.practicum.filmorate.controller.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.controller.exceptions.UserNotFound;
+import ru.yandex.practicum.filmorate.controller.exceptions.*;
+import ru.yandex.practicum.filmorate.controller.service.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.controller.service.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.controller.service.storage.UserStorage;
+import ru.yandex.practicum.filmorate.model.Director;
+import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.Rating;
+import ru.yandex.practicum.filmorate.model.dto.feedDto.FeedPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmPostRequest;
 import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmPutRequest;
 import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmResponse;
@@ -24,6 +28,7 @@ import ru.yandex.practicum.filmorate.model.dto.genreDto.GenreResponse;
 @Service
 public class FilmService {
   private static final LocalDate MIN_RELEASE_DATE = LocalDate.of(1895, 12, 28);
+  private static final Set<String> ALLOWED_SEARCH_BY = Set.of("title", "director");
 
   @Autowired
   @Qualifier("FilmDbStorage")
@@ -32,6 +37,16 @@ public class FilmService {
   @Autowired
   @Qualifier("UserDbStorage")
   UserStorage userStorage;
+
+  @Autowired
+  @Qualifier("ReviewDbStorage")
+  ReviewStorage reviewStorage;
+
+  @Autowired
+  @Qualifier("DirectorDbStorage")
+  DirectorStorage directorStorage;
+
+  @Autowired private FeedService feedService;
 
   public FilmResponse deleteLikeOnFilm(Long filmId, Long userId) {
     log.trace("Вызывается deleteLikeOnFilm: FilmID {} - UserID {}", filmId, userId);
@@ -42,6 +57,8 @@ public class FilmService {
       throw new UserNotFound(userId);
     }
     filmStorage.removeLike(filmId, userId);
+    feedService.addToFeed(new FeedPostRequest(userId, EventType.LIKE, Operation.REMOVE, filmId));
+
     return new FilmResponse(filmStorage.getFilmById(filmId));
   }
 
@@ -54,7 +71,24 @@ public class FilmService {
       throw new UserNotFound(userId);
     }
     filmStorage.addLike(filmId, userId);
+    feedService.addToFeed(new FeedPostRequest(userId, EventType.LIKE, Operation.ADD, filmId));
+
     return new FilmResponse(filmStorage.getFilmById(filmId));
+  }
+
+  public List<FilmResponse> getTopFilms(int count, Integer genreId, Integer year) {
+    log.trace("Запрос getTopFilms: count {}, genreId {}, year {}", count, genreId, year);
+    return filmStorage.getPopular(count, genreId, year).stream().map(FilmResponse::new).toList();
+  }
+
+  public List<FilmResponse> getFilmsByDirector(Long directorId, String sortBy) {
+    log.trace("Запрос getFilmsByDirector: directorId={}, sortBy={}", directorId, sortBy);
+    if (!directorStorage.isDirectorExist(directorId)) {
+      throw new DirectorNotFound(directorId);
+    }
+    return filmStorage.getFilmsByDirector(directorId, sortBy).stream()
+        .map(FilmResponse::new)
+        .toList();
   }
 
   public List<FilmResponse> getTopFilms(int maxPosts) {
@@ -77,6 +111,7 @@ public class FilmService {
     validateReleaseDate(filmPostRequest.getReleaseDate());
     validateMpa(filmPostRequest.getMpa());
     validateGenres(filmPostRequest.getGenres());
+    validateDirectors(filmPostRequest.getDirectors());
     return new FilmResponse(filmStorage.addFilm(filmPostRequest));
   }
 
@@ -91,11 +126,15 @@ public class FilmService {
     if (filmPutRequest.getGenres() != null) {
       validateGenres(filmPutRequest.getGenres());
     }
+    if (filmPutRequest.getDirectors() != null) {
+      validateDirectors(filmPutRequest.getDirectors());
+    }
     return new FilmResponse(filmStorage.updateFilm(filmPutRequest));
   }
 
   public boolean deleteFilm(Long id) {
-    log.trace("Запрос FilmResponse через deleteFilm");
+    log.trace("Запрос boolean через deleteFilm");
+    reviewStorage.deleteByFilmId(id);
     return filmStorage.deleteFilm(id);
   }
 
@@ -123,13 +162,25 @@ public class FilmService {
     }
   }
 
+  private void validateDirectors(Set<Director> directors) {
+    if (directors == null) {
+      return;
+    }
+
+    for (Director director : directors) {
+      if (director.getId() == null || !directorStorage.isDirectorExist(director.getId())) {
+        throw new DirectorNotFound(director.getId());
+      }
+    }
+  }
+
   private void validateMpa(Rating mpa) {
     if (mpa == null || mpa.getId() == null || !filmStorage.isRatingExists(mpa.getId())) {
       throw new NotFoundException("Указанный рейтинг не найден");
     }
   }
 
-  private void validateGenres(java.util.Set<Genre> genres) {
+  private void validateGenres(Set<Genre> genres) {
     if (genres == null) {
       return;
     }
@@ -139,4 +190,53 @@ public class FilmService {
       }
     }
   }
+
+  public List<FilmResponse> getCommonFilms(long userId, long friendId) {
+      if (userId <= 0 || friendId <= 0) {
+          throw new ConditionsNotMetException("ID пользователя должен быть положительным числом");
+      }
+      if (userId == friendId) {
+          throw new ConditionsNotMetException("Пользователи должны быть разные");
+      }
+      if (!userStorage.isUserExists(userId)) {
+          throw new UserNotFound(userId);
+      }
+      if (!userStorage.isUserExists(friendId)) {
+          throw new UserNotFound(friendId);
+      }
+    return filmStorage.getCommonFilms(userId, friendId).stream().map(FilmResponse::new).toList();
+  }
+
+  public List<FilmResponse> searchFilms(String query, String by) {
+      if (query == null || query.isBlank()) {
+          throw new ConditionsNotMetException("Query не может быть пустым");
+      }
+      if (by == null || by.isBlank()) {
+          throw new ConditionsNotMetException("By не может быть пустым");
+      }
+
+      String[] byParams = by.toLowerCase().trim().split(",");
+
+      boolean searchByTitle = false;
+      boolean searchByDirector = false;
+
+      for (String patameter : byParams) {
+          String correctBy = patameter.trim();
+
+          if (!ALLOWED_SEARCH_BY.contains(correctBy)) {
+              throw new ConditionsNotMetException("Некорректное значение by! Должен быть 'title' или 'director'");
+          }
+
+          if ("title".equals(correctBy)) {
+              searchByTitle = true;
+          } else if ("director".equals(correctBy)) {
+              searchByDirector = true;
+          }
+      }
+
+      return filmStorage.searchFilms(query, searchByTitle, searchByDirector)
+              .stream()
+              .map(FilmResponse::new)
+              .toList();
+    }
 }

@@ -2,9 +2,11 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import java.util.Collection;
-import lombok.Getter;
+import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.controller.service.FilmService;
 import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmPostRequest;
@@ -16,58 +18,66 @@ import ru.yandex.practicum.filmorate.model.dto.filmDto.FilmResponse;
 @RequiredArgsConstructor
 public class FilmController {
 
-  @Getter private final FilmService filmService;
+  private final FilmService filmService;
 
   @GetMapping
-  @ResponseStatus(HttpStatus.OK)
-  public Collection<FilmResponse> getAllFilms() {
-    return filmService.getFilms();
+  public ResponseEntity<Collection<FilmResponse>> getAllFilms() {
+    return ResponseEntity.ok(filmService.getFilms());
   }
 
   @GetMapping("/{id}")
-  @ResponseStatus(HttpStatus.OK)
-  public FilmResponse getFilmById(@PathVariable Long id) {
-    return filmService.getFilmById(id);
+  public ResponseEntity<FilmResponse> getFilmById(@PathVariable Long id) {
+    return ResponseEntity.ok(filmService.getFilmById(id));
   }
 
   @PostMapping
-  @ResponseStatus(HttpStatus.CREATED)
-  public FilmResponse addFilm(@Valid @RequestBody FilmPostRequest filmPostRequest) {
-    return filmService.addFilm(filmPostRequest);
+  public ResponseEntity<FilmResponse> addFilm(@Valid @RequestBody FilmPostRequest filmPostRequest) {
+    return ResponseEntity.status(HttpStatus.CREATED).body(filmService.addFilm(filmPostRequest));
   }
 
   @PutMapping
-  @ResponseStatus(HttpStatus.OK)
-  public FilmResponse updateFilm(@Valid @RequestBody FilmPutRequest filmPutRequest) {
-    return filmService.updateFilm(filmPutRequest);
+  public ResponseEntity<FilmResponse> updateFilm(@Valid @RequestBody FilmPutRequest filmPutRequest) {
+    return ResponseEntity.ok(filmService.updateFilm(filmPutRequest));
   }
 
-  @DeleteMapping("/{id}")
-  @ResponseStatus(HttpStatus.NO_CONTENT)
-  public boolean deleteFilm(@PathVariable Long id) {
-    return filmService.deleteFilm(id);
+  @DeleteMapping("/{filmId}")
+  public ResponseEntity<Boolean> deleteFilm(@PathVariable Long filmId) {
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).body(filmService.deleteFilm(filmId));
   }
 
   // Like Mapping
 
   @PutMapping("/{id}/like/{userId}")
-  @ResponseStatus(HttpStatus.OK)
-  public FilmResponse likeFilm(@PathVariable Long id, @PathVariable Long userId) {
-    return filmService.addLikeOnFilm(id, userId);
+  public ResponseEntity<FilmResponse> likeFilm(@PathVariable Long id, @PathVariable Long userId) {
+    return ResponseEntity.ok(filmService.addLikeOnFilm(id, userId));
   }
 
   @DeleteMapping("/{id}/like/{userId}")
-  @ResponseStatus(HttpStatus.NO_CONTENT)
-  public FilmResponse deleteLike(@PathVariable Long id, @PathVariable Long userId) {
-    return filmService.deleteLikeOnFilm(id, userId);
+  public ResponseEntity<FilmResponse> deleteLike(@PathVariable Long id, @PathVariable Long userId) {
+    return ResponseEntity.ok(filmService.deleteLikeOnFilm(id, userId));
   }
 
   @GetMapping("/popular")
-  @ResponseStatus(HttpStatus.OK)
-  public Collection<FilmResponse> getPopularFilms(
-      @RequestParam(required = false, defaultValue = "10") int count) {
-    return filmService.getTopFilms(count);
+  public ResponseEntity<Collection<FilmResponse>> getPopularFilms(
+      @RequestParam(required = false, defaultValue = "10") int count,
+      @RequestParam(required = false) Integer genreId,
+      @RequestParam(required = false) Integer year) {
+    return ResponseEntity.ok(filmService.getTopFilms(count, genreId, year));
   }
 
+  @GetMapping("/director/{directorId}")
+  public ResponseEntity<Collection<FilmResponse>> getFilmsByDirector(
+      @PathVariable Long directorId, @RequestParam String sortBy) {
+    return ResponseEntity.ok(filmService.getFilmsByDirector(directorId, sortBy));
+  }
 
+  @GetMapping("/common")
+  public ResponseEntity<List<FilmResponse>> getCommonFilms(@RequestParam long userId, @RequestParam long friendId) {
+      return ResponseEntity.ok(filmService.getCommonFilms(userId, friendId));
+  }
+
+  @GetMapping("/search")
+  public ResponseEntity<List<FilmResponse>> searchFilms(@RequestParam String query, @RequestParam String by) {
+      return ResponseEntity.ok(filmService.searchFilms(query, by));
+  }
 }
