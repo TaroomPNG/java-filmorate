@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model.dto.reviewDto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +12,10 @@ public class ReviewPutRequest {
   private Long reviewId;
 
   @Builder.Default private String content = null;
-  @Builder.Default private Boolean isPositive = null;
+
+  @JsonProperty("isPositive")
+  @Builder.Default
+  private Boolean isPositive = null;
 
   @Builder.Default
   private Long userId = null;

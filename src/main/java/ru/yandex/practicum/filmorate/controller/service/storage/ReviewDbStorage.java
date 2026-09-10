@@ -78,14 +78,6 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
       setClauses.add("is_positive = ?");
       params.add(reviewPutRequest.getIsPositive());
     }
-    if (reviewPutRequest.getUserId() != null) {
-      setClauses.add("user_id = ?");
-      params.add(reviewPutRequest.getUserId());
-    }
-    if (reviewPutRequest.getFilmId() != null) {
-      setClauses.add("film_id = ?");
-      params.add(reviewPutRequest.getFilmId());
-    }
 
     if (!setClauses.isEmpty()) {
       String updateQuery =
